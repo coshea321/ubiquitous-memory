@@ -12,7 +12,7 @@ A LaserTank-style puzzle game (turn-based tank, lasers, mirrors, crates, anti-ta
 npm run build     # solve all levels, bake in PAR, write docs/ (PWA) and build/artifact.html
 npm run solve     # print par + shortest solution for every level (or: npm run solve -- crate)
 npm run serve     # serve docs/ on http://localhost:8080
-npm run check     # headless smoke test of the PWA (needs: npm i -D playwright)
+npm run check     # headless smoke test of the PWA (needs Playwright: preinstalled in Claude Code web sessions, else npm i -D playwright)
 ```
 
 Node 18+ is enough. Nothing needs installing except Playwright for `check`.
@@ -33,6 +33,9 @@ Node 18+ is enough. Nothing needs installing except Playwright for `check`.
 | `tools/check.js` | Playwright smoke test (script errors, service worker, offline reload, tap-to-drive). |
 | `docs/` | **Build output.** The deployable PWA. Do not edit by hand. |
 | `build/artifact.html` | **Build output.** Paste or publish as the claude.ai artifact. |
+| `BACKLOG.md` | Pending ideas and decisions on record. |
+| `.github/` | PR template and the CI checks (build, build output committed, smoke test). |
+| `.claude/skills/release/` | `/release`: the solve → build → check → commit → push → PR sequence. |
 
 ## Level format
 
@@ -117,11 +120,6 @@ Netlify or Cloudflare Pages also work: point them at the `docs` folder, with no 
 
 Run `npm run build`, then publish `build/artifact.html` to the artifact URL above. From Claude, ask to update that artifact with the file.
 
-## Ideas / next steps
+## Ideas and decisions
 
-- **Level editor:** palette, paint the grid, test play, and export the `rows` strings. The solver can run in the browser to validate (it is plain JS).
-- **Bigger levels:** full 16×16 maps, like the original.
-- **Hand-made hard tier:** replace the generated sectors 21–28 with hand-made puzzles.
-- **Feel:** sound effects (start audio from a tap), haptics (`navigator.vibrate`) on death and win.
-- **Move history:** show the move history, and add a replay of the shortest solution as a "show me" hint (the solver path is available at build time).
-- **Landscape layout:** put the board beside the controls in landscape on phones.
+Pending ideas and decisions on record (including ideas turned down) are in `BACKLOG.md`.

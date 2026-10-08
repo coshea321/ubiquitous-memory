@@ -6,6 +6,6 @@
     "build": "node tools/build.js",
     "solve": "node tools/solve.js",
     "serve": "npx --yes http-server docs -p 8080 -c-1",
-    "check": "node tools/check.js"
+    "check": "NODE_PATH=$(npm root -g) node tools/check.js"
   }
 }

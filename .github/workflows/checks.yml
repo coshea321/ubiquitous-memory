@@ -1,0 +1,45 @@
+# Runs the same checks a session runs locally, on every PR into main:
+#   - npm run build: solves every level (fails if one is unsolvable) and rebuilds docs/ and build/
+#   - the rebuilt docs/ and build/ must match what the PR committed (they are generated, never hand-edited)
+#   - npm run check: the built PWA in headless Chromium (script errors, service worker, offline reload, tap-to-drive)
+#
+# To make a red ✗ block merging, add a branch-protection rule on main that
+# requires the "Checks" status (repo → Settings → Branches).
+name: Checks
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Build (solves every level)
+        run: npm run build
+
+      - name: Build output is committed
+        run: |
+          if ! git diff --exit-code --stat -- docs build; then
+            echo "::error::docs/ or build/ is out of date. Run npm run build and commit the result."
+            exit 1
+          fi
+
+      # No package-lock: Playwright is the only dependency, installed for CI only.
+      - name: Install browser
+        run: |
+          npm i --no-save playwright
+          npx playwright install --with-deps chromium
+
+      - name: Smoke test
+        run: npm run check
