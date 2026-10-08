@@ -30,7 +30,7 @@ Node 18+ is enough. Nothing needs installing except Playwright for `check`.
 | `tools/lib.js` | Loads engine + levels into Node; BFS `solve(rows)`. |
 | `tools/solve.js`, `tools/try.js` | Check the real levels, or a scratch file of candidates. |
 | `tools/gen.js`, `prune.js`, `pick.js` | Random level generator → declutter → rank. Produced sectors 21–28. |
-| `tools/check.js` | Playwright smoke test (script errors, service worker, offline reload, tap-to-drive). |
+| `tools/check.js` | Playwright smoke test (script errors, service worker, offline reload, tap-to-drive, level switch mid-animation). |
 | `docs/` | **Build output.** The deployable PWA. Do not edit by hand. |
 | `build/artifact.html` | **Build output.** Paste or publish as the claude.ai artifact. |
 | `BACKLOG.md` | Pending ideas and decisions on record. |

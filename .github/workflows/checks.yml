@@ -1,7 +1,7 @@
 # Runs the same checks a session runs locally, on every PR into main:
 #   - npm run build: solves every level (fails if one is unsolvable) and rebuilds docs/ and build/
 #   - the rebuilt docs/ and build/ must match what the PR committed (they are generated, never hand-edited)
-#   - npm run check: the built PWA in headless Chromium (script errors, service worker, offline reload, tap-to-drive)
+#   - npm run check: the built PWA in headless Chromium (script errors, service worker, offline reload, tap-to-drive, level switch mid-animation)
 #
 # To make a red ✗ block merging, add a branch-protection rule on main that
 # requires the "Checks" status (repo → Settings → Branches).
