@@ -23,7 +23,10 @@ body{background:var(--bg);color:var(--ink);font-family:var(--mono);font-size:14p
 header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:2px solid var(--ink);padding-bottom:6px}
 h1{font-family:var(--display);font-weight:400;font-size:clamp(26px,7vw,38px);letter-spacing:.04em;margin:0;line-height:1;text-transform:uppercase}
 .sub{margin:0;color:var(--muted);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
-.strip{display:flex;gap:6px;flex-wrap:wrap}
+.sectors{border:0;padding:0}
+.sectors summary{padding:4px 0}
+.sectors .n{color:var(--muted);font-weight:500;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.strip{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .strip button{width:34px;height:30px;font:600 12px var(--mono);font-variant-numeric:tabular-nums;background:transparent;color:var(--ink);border:1.5px solid var(--line);border-radius:2px;cursor:pointer;padding:0}
 .strip button.done{background:var(--ok);border-color:var(--ok);color:var(--bg)}
 .strip button[aria-current="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink)}
@@ -48,7 +51,7 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outli
 .side{display:flex;flex-direction:column;gap:8px;align-items:stretch;flex:1;min-width:150px;max-width:260px}
 #fire{background:var(--accent);border-color:var(--accent);color:#fff;font-family:var(--display);font-weight:400;font-size:22px;padding:18px 14px;letter-spacing:.1em}
 .side .row .btn{flex:1}
-details{border-top:1.5px solid var(--line);padding-top:10px}
+details:not(.sectors){border-top:1.5px solid var(--line);padding-top:10px}
 summary{cursor:pointer;font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:12px}
 dl{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;margin:10px 0 0}
 dt{font-weight:600} dd{margin:0;color:var(--muted);min-width:0}
@@ -56,7 +59,10 @@ kbd{font:inherit;border:1px solid var(--line);border-radius:2px;padding:0 4px}
 </style>
 <main class="wrap">
   <header><h1>Beamline Tank</h1><p class="sub">A LaserTank-style puzzle &middot; <span id="nsec"></span> sectors</p></header>
-  <nav class="strip" id="strip" aria-label="Levels"></nav>
+  <details class="sectors" id="sectors">
+    <summary>Sectors <span class="n" id="sprog"></span></summary>
+    <nav class="strip" id="strip" aria-label="Levels"></nav>
+  </details>
   <div class="meta"><h2 id="lname"></h2><span class="n" id="count"></span></div>
   <p id="tip"></p>
   <div class="board" id="board"><canvas id="cv" aria-label="Game board"></canvas>

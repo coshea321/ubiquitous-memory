@@ -3,7 +3,7 @@
 A LaserTank-style puzzle game (turn-based tank, lasers, mirrors, crates, anti-tanks). It runs as a single-file web page and as an installable PWA for phones. It uses no frameworks or dependencies, and every level is checked by a solver.
 
 - **Live artifact (claude.ai):** https://claude.ai/artifact/81MKYyjjK6y3if68uSxwak
-- **Status:** 28 levels, ordered easy to hard. Tap-to-drive, undo, restart, progress saved on the device, light and dark themes.
+- **Status:** 33 levels, ordered easy to hard. Sectors 29–33 are an extra-hard tier (par 80+). Tap-to-drive, undo, restart, progress saved on the device, light and dark themes.
 - **Name:** "Beamline Tank" is deliberately not "LaserTank". The artwork and levels are original; only the rules are borrowed.
 
 ## Quick start
@@ -30,7 +30,8 @@ Node 18+ is enough. Nothing needs installing except Playwright for `check`.
 | `tools/lib.js` | Loads engine + levels into Node; BFS `solve(rows)`. |
 | `tools/solve.js`, `tools/try.js` | Check the real levels, or a scratch file of candidates. |
 | `tools/gen.js`, `prune.js`, `pick.js` | Random level generator → declutter → rank. Produced sectors 21–28. |
-| `tools/check.js` | Playwright smoke test (script errors, service worker, offline reload, tap-to-drive, level switch mid-animation). |
+| `tools/climb.js` | Hill-climber: mutates a level cell by cell, keeping changes that stay solvable and raise par. Produced sectors 29–33 (then `prune.js`). |
+| `tools/check.js` | Playwright smoke test (script errors, service worker, offline reload, tap-to-drive, collapsible sector strip, level switch mid-animation). |
 | `docs/` | **Build output.** The deployable PWA. Do not edit by hand. |
 | `build/artifact.html` | **Build output.** Paste or publish as the claude.ai artifact. |
 | `BACKLOG.md` | Pending ideas and decisions on record. |
@@ -78,6 +79,7 @@ A mirror's open sides are the two faces its bright diagonal looks out of. A beam
 ## UI notes (`src/ui.js`)
 
 - **Colors:** every color is a CSS token in `shell.html`. The canvas reads the tokens through `getComputedStyle` and re-reads them when the theme changes.
+- **Sector strip:** a `<details>` above the board, collapsed by default. Its summary shows the current sector and how many are cleared; picking a sector closes it again.
 - **Tap-to-drive:** `route()` runs a breadth-first search using only the four drive actions on cloned states. It therefore respects ice, belts, tunnels and anti-tank fire. It gives up after 40k states and shows a red cross. Tapping the tank fires.
 - **Input queue:** tapped routes go into `queue`. Pressing a key or button replaces the queue, which interrupts an auto-drive.
 - **Saved progress:** stored in `localStorage` key `blt2` as solved level *names*, so levels can be reordered freely.
@@ -97,6 +99,12 @@ To get more hard levels from the generator:
 ```bash
 node tools/gen.js 7 50000 mix > a.jsonl     # themes: mix | at (anti-tank heavy) | ice
 cat a.jsonl | node tools/pick.js 10 > picked.jsonl
+```
+
+For an extra-hard level, hill-climb an existing hard one (about 200 iterations, roughly 15 minutes), then prune it:
+
+```bash
+node tools/climb.js 7 200 '["#####",...]' best.json
 ```
 
 Generated levels are valid but look random. Hand-made levels read better.

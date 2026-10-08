@@ -11,7 +11,7 @@ Cathal is a **non-coder**: he reviews and merges every PR. Lead with the answer,
 ## Commands
 - `npm run solve`: par + shortest solution for every level (`npm run solve -- crate` for one).
 - `npm run build`: solves every level (fails if one is unsolvable), bakes in PAR, writes `docs/` (PWA) and `build/artifact.html`.
-- `npm run check`: Playwright smoke test of the built PWA (script errors, service worker, offline reload, tap-to-drive, level switch mid-animation).
+- `npm run check`: Playwright smoke test of the built PWA (script errors, service worker, offline reload, tap-to-drive, collapsible sector strip, level switch mid-animation).
   Playwright and Chromium are preinstalled in Claude Code web sessions.
 - `node tools/try.js ./scratch.js`: solve a scratch file of candidate levels.
 

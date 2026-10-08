@@ -38,7 +38,10 @@ body{background:var(--bg);color:var(--ink);font-family:var(--mono);font-size:14p
 header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:2px solid var(--ink);padding-bottom:6px}
 h1{font-family:var(--display);font-weight:400;font-size:clamp(26px,7vw,38px);letter-spacing:.04em;margin:0;line-height:1;text-transform:uppercase}
 .sub{margin:0;color:var(--muted);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
-.strip{display:flex;gap:6px;flex-wrap:wrap}
+.sectors{border:0;padding:0}
+.sectors summary{padding:4px 0}
+.sectors .n{color:var(--muted);font-weight:500;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.strip{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .strip button{width:34px;height:30px;font:600 12px var(--mono);font-variant-numeric:tabular-nums;background:transparent;color:var(--ink);border:1.5px solid var(--line);border-radius:2px;cursor:pointer;padding:0}
 .strip button.done{background:var(--ok);border-color:var(--ok);color:var(--bg)}
 .strip button[aria-current="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink)}
@@ -63,7 +66,7 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outli
 .side{display:flex;flex-direction:column;gap:8px;align-items:stretch;flex:1;min-width:150px;max-width:260px}
 #fire{background:var(--accent);border-color:var(--accent);color:#fff;font-family:var(--display);font-weight:400;font-size:22px;padding:18px 14px;letter-spacing:.1em}
 .side .row .btn{flex:1}
-details{border-top:1.5px solid var(--line);padding-top:10px}
+details:not(.sectors){border-top:1.5px solid var(--line);padding-top:10px}
 summary{cursor:pointer;font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:12px}
 dl{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;margin:10px 0 0}
 dt{font-weight:600} dd{margin:0;color:var(--muted);min-width:0}
@@ -73,7 +76,10 @@ kbd{font:inherit;border:1px solid var(--line);border-radius:2px;padding:0 4px}
 <body>
 <main class="wrap">
   <header><h1>Beamline Tank</h1><p class="sub">A LaserTank-style puzzle &middot; <span id="nsec"></span> sectors</p></header>
-  <nav class="strip" id="strip" aria-label="Levels"></nav>
+  <details class="sectors" id="sectors">
+    <summary>Sectors <span class="n" id="sprog"></span></summary>
+    <nav class="strip" id="strip" aria-label="Levels"></nav>
+  </details>
   <div class="meta"><h2 id="lname"></h2><span class="n" id="count"></span></div>
   <p id="tip"></p>
   <div class="board" id="board"><canvas id="cv" aria-label="Game board"></canvas>
@@ -246,9 +252,14 @@ const LEVELS=[{"name":"First Shot","tip":"Bricks crumble under laser fire. Press
 {"name":"Watchtower","tip":"Hard sector. No hints from here on.","rows":["############","#.#.#.^....#","#.#.#......#","#.#.#......#","#.~.T.bB####","#F~........#","#.~...#.#.##","#.~...#.#.##","############"]},
 {"name":"Marsh","tip":"Hard sector. No hints from here on.","rows":["#############","#.F~..##....#","#.~~........#","#~.~......T##","#..~B..####.#","#..##b......#","#...........#","#############"]},
 {"name":"Gridlock","tip":"Hard sector. No hints from here on.","rows":["############","#....<B4..T#","#.....B...##","#..~B.4.b.##","#...#...####","#...###~F.##","#...######.#","############"]},
-{"name":"Citadel","tip":"Hard sector. No hints from here on.","rows":["###########","#...~.....#","#.F~...1..#","#..~##b.#.#","###~...^#.#","##.....T#.#","##......#.#","#....B..#.#","#.....#####","###########"]}];
+{"name":"Citadel","tip":"Hard sector. No hints from here on.","rows":["###########","#...~.....#","#.F~...1..#","#..~##b.#.#","###~...^#.#","##.....T#.#","##......#.#","#....B..#.#","#.....#####","###########"]},
+{"name":"Deadfall","tip":"Extra-hard sector. Plan every shot before you fire.","rows":["############","#.........##","#..#....#~.#","#T7..b.~.B.#","#G#....4B..#","#..b.##.F2.#","#.B7..#.#..#","#..G...#...#","############"]},
+{"name":"Foundry","tip":"Extra-hard sector. Plan every shot before you fire.","rows":["############","#..#..B4b..#","#.bb..B..B##","#..##.5.b..#","#...#...####","#..T#.#~F..#","#....#.#...#","############"]},
+{"name":"Twin Guns","tip":"Extra-hard sector. Plan every shot before you fire.","rows":["###########","#...~..#..#","#.F~...1..#","#...#...#.#","#.##.#^^5.#","##....T.#.#","#..b~#...##","#....B..#.#","#.....#..##","###########"]},
+{"name":"Crossfire","tip":"Extra-hard sector. Plan every shot before you fire.","rows":["#############","#.F~.6#.....#","#.~~..v.~...#","#~.~<.~.#.T##","#..~B..<#~#.#","#..##.......#","#.......~...#","#############"]},
+{"name":"Last Stand","tip":"Extra-hard sector. Plan every shot before you fire.","rows":["############","###.bb^T...#","#3..#.5.#..#","#.#..~...~.#","#.~..#bB#.##","#FG....~...#","#.~..2~....#","#..#.b..~..#","############"]}];
 const ORIG_NAMES=["First Shot","Pontoon","Round the Corner","Line of Sight","Return Fire","Turntable","Black Ice","One-Way Belt","Wormholes","Thin Ice"];
-const PAR=[22,39,13,18,18,16,23,25,19,10,10,8,23,17,19,45,23,32,38,59,37,45,45,49,47,56,54,61];
+const PAR=[22,39,13,18,18,16,23,25,19,10,10,8,23,17,19,45,23,32,38,59,37,45,45,49,47,56,54,61,80,82,92,102,132];
 (function(){
 const $=id=>document.getElementById(id),cv=$('cv'),ctx=cv.getContext('2d');
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -351,6 +362,7 @@ function hud(){
   $('count').textContent='Moves '+moves+'  ·  Best possible '+PAR[li];
   $('tip').textContent=LEVELS[li].tip;
   [...$('strip').children].forEach((b,k)=>{b.className=solved.has(LEVELS[k].name)?'done':'';b.setAttribute('aria-current',k===li);});
+  $('sprog').textContent='· on '+String(li+1).padStart(2,'0')+' · '+LEVELS.filter(L=>solved.has(L.name)).length+' of '+LEVELS.length+' cleared';
 }
 function banner(kind,title,text,btns){
   const b=$('banner');if(!kind){b.hidden=true;return;}
@@ -424,7 +436,7 @@ function hold(el,a){
 }
 function start(data){
   load();if(data&&data.li>=0&&data.li<LEVELS.length)li=data.li;
-  LEVELS.forEach((L,k)=>{const b=document.createElement('button');b.textContent=String(k+1).padStart(2,'0');b.title=L.name;b.onclick=()=>{go(k);b.blur();};$('strip').appendChild(b);});
+  LEVELS.forEach((L,k)=>{const b=document.createElement('button');b.textContent=String(k+1).padStart(2,'0');b.title=L.name;b.onclick=()=>{go(k);b.blur();$('sectors').open=false;};$('strip').appendChild(b);});
   for(let d=0;d<4;d++)hold($('k'+d),d);hold($('fire'),4);
   cv.addEventListener('pointerdown',e=>{e.preventDefault();tapBoard(e);});
   $('undo').onclick=undo;$('reset').onclick=()=>{if(!playing)go(li);};
