@@ -100,6 +100,7 @@ function hud(){
   $('count').textContent='Moves '+moves+'  ·  Best possible '+PAR[li];
   $('tip').textContent=LEVELS[li].tip;
   [...$('strip').children].forEach((b,k)=>{b.className=solved.has(LEVELS[k].name)?'done':'';b.setAttribute('aria-current',k===li);});
+  $('sprog').textContent='· on '+String(li+1).padStart(2,'0')+' · '+LEVELS.filter(L=>solved.has(L.name)).length+' of '+LEVELS.length+' cleared';
 }
 function banner(kind,title,text,btns){
   const b=$('banner');if(!kind){b.hidden=true;return;}
@@ -173,7 +174,7 @@ function hold(el,a){
 }
 function start(data){
   load();if(data&&data.li>=0&&data.li<LEVELS.length)li=data.li;
-  LEVELS.forEach((L,k)=>{const b=document.createElement('button');b.textContent=String(k+1).padStart(2,'0');b.title=L.name;b.onclick=()=>{go(k);b.blur();};$('strip').appendChild(b);});
+  LEVELS.forEach((L,k)=>{const b=document.createElement('button');b.textContent=String(k+1).padStart(2,'0');b.title=L.name;b.onclick=()=>{go(k);b.blur();$('sectors').open=false;};$('strip').appendChild(b);});
   for(let d=0;d<4;d++)hold($('k'+d),d);hold($('fire'),4);
   cv.addEventListener('pointerdown',e=>{e.preventDefault();tapBoard(e);});
   $('undo').onclick=undo;$('reset').onclick=()=>{if(!playing)go(li);};
