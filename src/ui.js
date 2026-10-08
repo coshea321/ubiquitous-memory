@@ -1,7 +1,7 @@
 (function(){
 const $=id=>document.getElementById(id),cv=$('cv'),ctx=cv.getContext('2d');
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-let li=0,S,hist=[],moves=0,playing=false,queue=[],bad=null,view=null,beam=null,cell=32,C={};
+let li=0,S,hist=[],moves=0,playing=false,gen=0,queue=[],bad=null,view=null,beam=null,cell=32,C={};
 const solved=new Set();
 const NAMES=['bg','ink','floor','grid','wall','wallhi','brick','brickln','crate','crateln','water','waterhi','ice','icehi','belt','beltln','glass','mirror','mirrorback','tank','tankdk','enemy','enemydk','deadat','laser','flag','accent'];
 function colors(){const cs=getComputedStyle(document.documentElement);NAMES.forEach(n=>C[n]=cs.getPropertyValue('--'+n).trim());}
@@ -108,7 +108,7 @@ function banner(kind,title,text,btns){
   btns.forEach(([label,fn,pri])=>{const e=document.createElement('button');e.className='btn'+(pri?' pri':'');e.textContent=label;e.onclick=fn;row.appendChild(e);});
   b.hidden=false;
 }
-function go(n){li=(n+LEVELS.length)%LEVELS.length;S=parseLevel(LEVELS[li].rows);hist=[];moves=0;queue=[];view=null;beam=null;banner();save();hud();size();}
+function go(n){gen++;playing=false;li=(n+LEVELS.length)%LEVELS.length;S=parseLevel(LEVELS[li].rows);hist=[];moves=0;queue=[];view=null;beam=null;banner();save();hud();size();}
 function undo(){if(playing||!hist.length)return;S=hist.pop();moves--;banner();hud();draw();}
 function ended(){
   if(S.won){
@@ -122,8 +122,9 @@ function ended(){
 }
 function play(frames,done){
   if(reduce||!frames.length){draw();done();return;}
-  let k=0;playing=true;
+  let k=0;playing=true;const g=gen;
   (function next(){
+    if(g!==gen)return; // level changed mid-animation: drop the old frames
     if(k>=frames.length){playing=false;view=null;beam=null;draw();done();return;}
     const f=frames[k++];view=f.s;beam=f.laser?f:null;draw();setTimeout(next,f.laser?130:50);
   })();
