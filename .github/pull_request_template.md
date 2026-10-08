@@ -1,11 +1,11 @@
 👉 **Try this version:** TEST-ARTIFACT-LINK
 
-🎮 **Live game:** https://claude.ai/artifact/81MKYyjjK6y3if68uSxwak
+🎮 **Live game:** https://coshea321.github.io/ubiquitous-memory/
 
 <!-- The test link is this branch's build/artifact.html published as a separate
      claude.ai artifact, so the live game stays untouched until merge. Its saved
-     progress is separate from the live game's. The live artifact is updated
-     from main after merge. -->
+     progress is separate from the live game's. The live game is GitHub Pages,
+     which serves docs/ from main, so it updates by itself on merge. -->
 
 ## What changed
 

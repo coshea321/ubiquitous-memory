@@ -1,7 +1,7 @@
 # Beamline Tank
 
-LaserTank-style puzzle game. Plain JS, no dependencies. Played as a claude.ai artifact
-(**live game: https://claude.ai/artifact/81MKYyjjK6y3if68uSxwak**) and as an installable PWA built into `docs/`.
+LaserTank-style puzzle game. Plain JS, no dependencies. Played on GitHub Pages
+(**live game: https://coshea321.github.io/ubiquitous-memory/**), an installable PWA served from `docs/` on `main`. The old claude.ai artifact is retired: don't update it.
 Cathal is a **non-coder**: he reviews and merges every PR. Lead with the answer, be concise, flag honest trade-offs.
 
 ## Docs
@@ -35,5 +35,5 @@ Cathal is a **non-coder**: he reviews and merges every PR. Lead with the answer,
 - PR bodies follow `.github/pull_request_template.md` (the API doesn't apply it): a "Try this version" link first
   (this branch's `build/artifact.html` published as a separate test artifact, never the live one before merge), then the live game link,
   then plain-English boxes for what to tap. CI (`.github/workflows/checks.yml`) runs build, the build-output match and `npm run check` on every PR.
-- After merge, offer to publish `build/artifact.html` to the live artifact.
+- Merging is the release: Pages redeploys `docs/` from `main`. No artifact to update afterwards.
 - After significant work, update `HANDOVER.md` (rules, file map, level count) and `BACKLOG.md` (strike what closed, record decisions).
