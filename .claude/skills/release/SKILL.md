@@ -47,5 +47,5 @@ Run these steps in order. Stop at the first failure and report it; don't commit.
    - **Checks:** solve result (with par changes), the `npm run check` output,
      and whether `docs/`/`build/` were rebuilt. Say which files under `tools/`
      changed and why, if any did.
-10. **Live game.** After Cathal merges, offer to publish `build/artifact.html` to the
-   live artifact (HANDOVER.md § Updating the claude.ai artifact).
+10. **Live game.** Merging is the release: GitHub Pages redeploys `docs/` from `main`.
+   Don't update the retired claude.ai artifact.

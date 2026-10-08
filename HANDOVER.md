@@ -2,7 +2,7 @@
 
 A LaserTank-style puzzle game (turn-based tank, lasers, mirrors, crates, anti-tanks). It runs as a single-file web page and as an installable PWA for phones. It uses no frameworks or dependencies, and every level is checked by a solver.
 
-- **Live artifact (claude.ai):** https://claude.ai/artifact/81MKYyjjK6y3if68uSxwak
+- **Live game (GitHub Pages):** https://coshea321.github.io/ubiquitous-memory/ (served from `docs/` on `main`, so every merge goes live)
 - **Status:** 33 levels, ordered easy to hard. Sectors 29–33 are an extra-hard tier (par 80+). Tap-to-drive, undo, restart, progress saved on the device, light and dark themes.
 - **Name:** "Beamline Tank" is deliberately not "LaserTank". The artwork and levels are original; only the rules are borrowed.
 
@@ -124,9 +124,9 @@ After that it opens full screen and works offline. The service worker caches the
 
 Netlify or Cloudflare Pages also work: point them at the `docs` folder, with no build command.
 
-## Updating the claude.ai artifact
+## Test builds and the old artifact
 
-Run `npm run build`, then publish `build/artifact.html` to the artifact URL above. From Claude, ask to update that artifact with the file.
+The live game is GitHub Pages; merging to `main` deploys it. `build/artifact.html` is still built: each PR publishes it as a separate test artifact so the change can be tried before merge. The original claude.ai artifact (https://claude.ai/artifact/81MKYyjjK6y3if68uSxwak) is retired and no longer updated.
 
 ## Ideas and decisions
 
