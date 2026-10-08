@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#d8d5c0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#151912" media="(prefers-color-scheme: dark)">
+<meta name="description" content="A LaserTank-style puzzle game.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Beamline">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;overscroll-behavior:none;-webkit-tap-highlight-color:transparent}[hidden]{display:none!important}html{-webkit-text-size-adjust:100%}</style>
+<title>Beamline Tank</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: one centred column like a field-manual page: stencilled masthead, level strip, board, then a control deck. */
+:root{
+  --bg:#d8d5c0; --panel:#c8c5ad; --ink:#22271b; --muted:#5a604c; --line:#9d9d83; --accent:#b23a1c; --ok:#3f6b2c;
+  --floor:#bdb99c; --grid:#a9a588; --wall:#4b5140; --wallhi:#656c56; --brick:#a2573a; --brickln:#6e3622;
+  --crate:#c79a4e; --crateln:#7d5a22; --water:#3f7896; --waterhi:#8fbdd1; --ice:#d9ecef; --icehi:#ffffff;
+  --belt:#3a3d38; --beltln:#e0b83a; --glass:#9fd0d6; --mirror:#f4f7f2; --mirrorback:#6a7480;
+  --tank:#3f6b2c; --tankdk:#22381a; --enemy:#a3301c; --enemydk:#571709; --deadat:#77786f; --laser:#ff3b1f; --flag:#d8a514;
+  --display:"Black Ops One","Stencil","Impact",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#151912; --panel:#1f251b; --ink:#dfe3cd; --muted:#959d83; --line:#3b4333; --accent:#ff6a45; --ok:#8fc56f;
+  --floor:#343a2c; --grid:#40473a; --wall:#0d100b; --wallhi:#262c20; --ice:#b9d6dc; --water:#2c5f7c; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#151912; --panel:#1f251b; --ink:#dfe3cd; --muted:#959d83; --line:#3b4333; --accent:#ff6a45; --ok:#8fc56f;
+  --floor:#343a2c; --grid:#40473a; --wall:#0d100b; --wallhi:#262c20; --ice:#b9d6dc; --water:#2c5f7c; color-scheme:dark }
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--mono);font-size:14px;line-height:1.5}
+.wrap{max-width:680px;margin:0 auto;padding-inline:16px;padding-block:18px 28px;display:flex;flex-direction:column;gap:12px}
+header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:2px solid var(--ink);padding-bottom:6px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(26px,7vw,38px);letter-spacing:.04em;margin:0;line-height:1;text-transform:uppercase}
+.sub{margin:0;color:var(--muted);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.strip{display:flex;gap:6px;flex-wrap:wrap}
+.strip button{width:34px;height:30px;font:600 12px var(--mono);font-variant-numeric:tabular-nums;background:transparent;color:var(--ink);border:1.5px solid var(--line);border-radius:2px;cursor:pointer;padding:0}
+.strip button.done{background:var(--ok);border-color:var(--ok);color:var(--bg)}
+.strip button[aria-current="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink)}
+.meta{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.meta h2{font-family:var(--display);font-weight:400;font-size:20px;margin:0;letter-spacing:.04em;text-transform:uppercase}
+.meta .n{color:var(--muted);font-variant-numeric:tabular-nums;font-size:13px}
+#tip{margin:0;color:var(--muted);min-height:3em;max-width:62ch}
+.board{position:relative;display:flex;justify-content:center;background:var(--panel);border:2px solid var(--ink);padding:6px;min-width:0}
+canvas{display:block;max-width:100%;touch-action:none;cursor:pointer}
+#banner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:12px;background:color-mix(in srgb,var(--bg) 82%,transparent)}
+#banner strong{font-family:var(--display);font-weight:400;font-size:clamp(22px,6vw,32px);letter-spacing:.05em;text-transform:uppercase}
+#banner.lost strong{color:var(--accent)} #banner.won strong{color:var(--ok)}
+#banner p{margin:0} .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.btn{font:600 13px var(--mono);letter-spacing:.06em;text-transform:uppercase;background:var(--panel);color:var(--ink);border:1.5px solid var(--ink);border-radius:2px;padding:9px 14px;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.btn.pri{background:var(--ink);color:var(--bg)}
+.btn:active{transform:translateY(1px)}
+button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.deck{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.pad{display:grid;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:4px}
+.pad .btn{padding:0;font-size:18px}
+.pad .u{grid-area:1/2}.pad .l{grid-area:2/1}.pad .r{grid-area:2/3}.pad .d{grid-area:3/2}
+.side{display:flex;flex-direction:column;gap:8px;align-items:stretch;flex:1;min-width:150px;max-width:260px}
+#fire{background:var(--accent);border-color:var(--accent);color:#fff;font-family:var(--display);font-weight:400;font-size:22px;padding:18px 14px;letter-spacing:.1em}
+.side .row .btn{flex:1}
+details{border-top:1.5px solid var(--line);padding-top:10px}
+summary{cursor:pointer;font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:12px}
+dl{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;margin:10px 0 0}
+dt{font-weight:600} dd{margin:0;color:var(--muted);min-width:0}
+kbd{font:inherit;border:1px solid var(--line);border-radius:2px;padding:0 4px}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header><h1>Beamline Tank</h1><p class="sub">A LaserTank-style puzzle &middot; <span id="nsec"></span> sectors</p></header>
+  <nav class="strip" id="strip" aria-label="Levels"></nav>
+  <div class="meta"><h2 id="lname"></h2><span class="n" id="count"></span></div>
+  <p id="tip"></p>
+  <div class="board" id="board"><canvas id="cv" aria-label="Game board"></canvas>
+    <div id="banner" hidden><strong id="btitle"></strong><p id="btext"></p><div class="row" id="bbtns"></div></div>
+  </div>
+  <div class="deck">
+    <div class="pad" aria-label="Drive">
+      <button class="btn u" id="k0" aria-label="Up">&#9650;</button><button class="btn l" id="k3" aria-label="Left">&#9664;</button>
+      <button class="btn r" id="k1" aria-label="Right">&#9654;</button><button class="btn d" id="k2" aria-label="Down">&#9660;</button>
+    </div>
+    <div class="side">
+      <button class="btn" id="fire">Fire</button>
+      <div class="row"><button class="btn" id="undo">Undo</button><button class="btn" id="reset">Restart</button></div>
+    </div>
+  </div>
+  <details>
+    <summary>Field manual</summary>
+    <dl>
+      <dt>Controls</dt><dd><kbd>Arrows</kbd> or <kbd>WASD</kbd> drive (first press turns, second moves). <kbd>Space</kbd> fires. <kbd>U</kbd> undoes, <kbd>R</kbd> restarts. Tap a square to drive there by the safest route; tap your tank to fire.</dd>
+      <dt>Goal</dt><dd>Drive onto the yellow flag.</dd>
+      <dt>Brick</dt><dd>Destroyed by one shot.</dd>
+      <dt>Crate</dt><dd>Each shot pushes it one square. In water it becomes a bridge.</dd>
+      <dt>Mirror</dt><dd>Bends the beam off its bright diagonal. A hit on a dull side pushes it. It sinks in water.</dd>
+      <dt>Round mirror</dt><dd>Fixed in place. A hit on a dull side turns it clockwise.</dd>
+      <dt>Glass</dt><dd>Blocks tanks, lets lasers through.</dd>
+      <dt>Anti-tank</dt><dd>Shoots you on sight along its barrel line. Killed only by a hit on the muzzle; other hits push it.</dd>
+      <dt>Water</dt><dd>Sinks your tank.</dd>
+      <dt>Ice</dt><dd>Tanks and pushed objects slide until stopped. Cracked ice turns to water after you leave it.</dd>
+      <dt>Belt</dt><dd>Carries the tank in the arrow direction.</dd>
+      <dt>Tunnel</dt><dd>Teleports to the matching tunnel if its exit is clear.</dd>
+    </dl>
+  </details>
+</main>
+<script>
+const DX=[0,1,0,-1],DY=[-1,0,1,0];
+function parseLevel(rows){
+  const h=rows.length,w=rows[0].length,ter=new Array(w*h).fill('.'),obj=new Array(w*h).fill('');
+  let tx=0,ty=0;
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+    const c=rows[y][x],i=y*w+x;
+    if('#bBG'.includes(c))obj[i]=c;
+    else if('1234'.includes(c))obj[i]='M'+(+c-1);
+    else if('5678'.includes(c))obj[i]='R'+(+c-5);
+    else if('^>v<'.includes(c))obj[i]='A'+'^>v<'.indexOf(c);
+    else if('urdl'.includes(c))ter[i]='c'+'urdl'.indexOf(c);
+    else if('~itFXYZ'.includes(c))ter[i]=c;
+    else if(c==='T'){tx=x;ty=y;}
+  }
+  return {w,h,ter,obj,tx,ty,td:0,dead:false,won:false};
+}
+function clone(s){return {w:s.w,h:s.h,ter:s.ter.slice(),obj:s.obj.slice(),tx:s.tx,ty:s.ty,td:s.td,dead:s.dead,won:s.won};}
+function inb(s,x,y){return x>=0&&y>=0&&x<s.w&&y<s.h;}
+function isTunnel(t){return t==='X'||t==='Y'||t==='Z';}
+function partner(s,i){for(let j=0;j<s.ter.length;j++)if(j!==i&&s.ter[j]===s.ter[i])return j;return -1;}
+function snap(s,F,extra){if(F)F.push(Object.assign({s:clone(s)},extra||{}));}
+
+function pushObj(s,x,y,d,F){
+  const o=s.obj[y*s.w+x];let moved=false;
+  for(let n=0;n<80;n++){
+    const nx=x+DX[d],ny=y+DY[d];
+    if(!inb(s,nx,ny))break;
+    const ni=ny*s.w+nx,t=s.ter[ni];
+    if(s.obj[ni]||(nx===s.tx&&ny===s.ty)||t==='F')break;
+    s.obj[y*s.w+x]='';moved=true;
+    if(t==='~'){if(o==='B')s.ter[ni]='=';snap(s,F);return true;}
+    if(isTunnel(t)){
+      const p=partner(s,ni);
+      if(p>=0&&!s.obj[p]&&p!==s.ty*s.w+s.tx){s.obj[p]=o;snap(s,F);return true;}
+    }
+    s.obj[ni]=o;x=nx;y=ny;snap(s,F);
+    if(t!=='i'&&t!=='t')break;
+  }
+  return moved;
+}
+function checkAT(s,F){
+  if(s.dead||s.won)return;
+  for(let d=0;d<4;d++){
+    let x=s.tx+DX[d],y=s.ty+DY[d];
+    while(inb(s,x,y)){
+      const o=s.obj[y*s.w+x];
+      if(o==='A'+((d+2)%4)){s.dead=true;snap(s,F,{laser:[[x,y],[s.tx,s.ty]],hostile:true});snap(s,F);return;}
+      if(o&&o!=='G')break;
+      x+=DX[d];y+=DY[d];
+    }
+  }
+}
+function stepTank(s,d,F){
+  const nx=s.tx+DX[d],ny=s.ty+DY[d];
+  if(!inb(s,nx,ny))return false;
+  const ni=ny*s.w+nx;
+  if(s.obj[ni])return false;
+  const oi=s.ty*s.w+s.tx;
+  if(s.ter[oi]==='t')s.ter[oi]='~';
+  s.tx=nx;s.ty=ny;
+  const t=s.ter[ni];
+  if(isTunnel(t)){const p=partner(s,ni);if(p>=0&&!s.obj[p]){snap(s,F);s.tx=p%s.w;s.ty=(p/s.w)|0;}}
+  if(t==='~')s.dead=true;
+  if(t==='F')s.won=true;
+  snap(s,F);
+  checkAT(s,F);
+  return true;
+}
+function settle(s,d,F){
+  let guard=0;
+  while(!s.dead&&!s.won&&guard++<200){
+    const t=s.ter[s.ty*s.w+s.tx];
+    if((t==='i'||t==='t')&&d>=0){if(!stepTank(s,d,F))break;continue;}
+    if(t[0]==='c'){d=+t[1];if(!stepTank(s,d,F))break;continue;}
+    break;
+  }
+}
+function fire(s,F){
+  let x=s.tx,y=s.ty,d=s.td,hit=null;const pts=[[x,y]];
+  for(let n=0;n<800;n++){
+    x+=DX[d];y+=DY[d];pts.push([x,y]);
+    if(!inb(s,x,y))break;
+    if(x===s.tx&&y===s.ty){hit='self';break;}
+    const o=s.obj[y*s.w+x];
+    if(!o||o==='G')continue;
+    if(o[0]==='M'||o[0]==='R'){
+      const k=+o[1],from=(d+2)%4;
+      if(from===k){d=(k+1)%4;continue;}
+      if(from===(k+1)%4){d=k;continue;}
+    }
+    hit=o;break;
+  }
+  snap(s,F,{laser:pts,self:hit==='self'});
+  if(hit==='self'){s.dead=true;snap(s,F);return;}
+  if(hit){
+    const i=y*s.w+x,c=hit[0],k=+hit[1];
+    if(c==='b')s.obj[i]='';
+    else if(c==='R')s.obj[i]='R'+((k+1)%4);
+    else if(c==='A'&&d===(k+2)%4)s.obj[i]='D'+k;
+    else if(c!=='#')pushObj(s,x,y,d,F);
+  }
+  snap(s,F);
+}
+// actions: 0-3 = up/right/down/left, 4 = fire. Returns false if nothing happened.
+function act(s,a,F){
+  if(s.dead||s.won)return false;
+  if(a===4){fire(s,F);checkAT(s,F);settle(s,-1,F);return true;}
+  if(s.td!==a){s.td=a;snap(s,F);return true;}
+  if(!stepTank(s,a,F))return false;
+  settle(s,a,F);return true;
+}
+const LEVELS=[{"name":"First Shot","tip":"Bricks crumble under laser fire. Press a direction once to turn, again to drive.","rows":["############","#T...#.....#","#.##.#.###.#","#.#..b.#F#.#","#.#.####b#.#","#.#........#","############"]},
+{"name":"Pontoon","tip":"Shoot a crate to shove it one square. A crate pushed into water becomes a bridge.","rows":["##########","#T.......#","#..B..B..#","#........#","#~~~~~~~~#","#~~~~~~~~#","#.......F#","##########"]},
+{"name":"Round the Corner","tip":"Mirrors bend the beam off their bright face. Hit the dull side and they slide instead.","rows":["###########","#T...3#####","#.###.#####","#.###.#####","#....B.F###","#####.#####","###########"]},
+{"name":"Line of Sight","tip":"An anti-tank fires the instant you cross its barrel line. Put something in the way.","rows":["############","#######v####","#T.........#","#...B......#","#.........F#","############"]},
+{"name":"Brick Maze","tip":"Every brick you clear opens a new lane. Work out which ones matter.","rows":["############","#T.b...b...#","#.#.##.#.#.#","#.b.#..b.#.#","#.#.#.##.#b#","#...b...#.F#","############"]},
+{"name":"Return Fire","tip":"An anti-tank only dies to a hit on its muzzle. Any other side just shoves it.","rows":["############","#T.........#","#..........#","#..1.....<.#","######.#####","#####F.#####","############"]},
+{"name":"Turntable","tip":"A round mirror never slides. A hit on its dull side spins it a quarter turn clockwise.","rows":["############","#....#....F#","#....#.....#","#..8.....<.#","#....#.....#","#T...#.....#","############"]},
+{"name":"Gauntlet","tip":"Two guns cover the hall. A crate in each line of fire buys you a safe crossing.","rows":["##############","####v####v####","#T...........#","#..B....B....#","#...........F#","##############"]},
+{"name":"Sinker","tip":"Anything but a crate sinks without a trace. Knock the guard into the water.","rows":["############","#T.....G..6#","#......#.F.#","#......#...#","#.........<#","#######~~~~#","############"]},
+{"name":"Black Ice","tip":"On ice you keep sliding until something stops you.","rows":["############","#Tiiiiii#ii#","#iiii#iiiii#","#i#iiiiii#i#","#iiiiii#iii#","#iii#iiiiii#","#iiiiiiii#F#","############"]},
+{"name":"One-Way Belt","tip":"Glass stops a tank but not a laser. Belts carry you one way only, so finish your business first.","rows":["#############","#.....#..####","#T...GGB~F###","#.....#..####","#rrrrrrr.####","#############"]},
+{"name":"Belt Run","tip":"Once you step on the belt there is no stopping. Make the whole ride safe first.","rows":["##############","####v#########","#T.B..########","#.....GG3#####","#rrrrrrrrrrrF#","########.#####","########.#####","########^#####","##############"]},
+{"name":"Wormholes","tip":"Matching tunnels are linked. Crates travel through them too, and a blocked exit is a closed door.","rows":["###########","#T..#####F#","#.B.#~~~~~#","#.X.#....X#","#Y..#Y....#","###########"]},
+{"name":"Skating Crate","tip":"A crate on ice skates until it hits something. Use it as a brake.","rows":["############","#T.........#","#.##B#######","#.iiiiiiiii#","#.iiiiiiiii#","#.iiiiiiiii#","#.iiiiii#ii#","######F#####","############"]},
+{"name":"Bait","tip":"A live anti-tank blocks a laser as well as any crate does.","rows":["############","#T...#v#...#","#..........#","#..........#","#..>.......#","#..........#","######.#####","######F#####","############"]},
+{"name":"Periscope","tip":"This mirror only slides up or left. Get it under the gun first.","rows":["############","#T.....##v##","#......##.##","#..........#","#......##.##","#......##.##","#......##.##","#......##F##","#.........##","#......##4##","#.........##","############"]},
+{"name":"Thin Ice","tip":"Cracked ice breaks behind you, and crates skate across it. Everything you have learned applies.","rows":["##############","#T.....#######","#.....B#######","#......#######","#.1....ttt~F<#","##############"]},
+{"name":"Rotary Relay","tip":"Two round mirrors stand between you and the gun. There is more than one way in.","rows":["#############","##8~~~~~~~5##","#.~..T.....##","#.~..T.....##","#.~......#.F#","#.~..T.....##","#.~..T.....##","#...<....#^##","#############"]},
+{"name":"Courier","tip":"Send crates through the tunnel, then follow them. Watch where you step on the way back.","rows":["#############","#T....#.....#","#..B..#..Y..#","#..X..#..X..#","#.....###~###","#..B..###~###","#Y....###F###","#############"]},
+{"name":"Three Crates","tip":"Three rows of water, three crates. Every push counts.","rows":["###########","#T........#","#.B..B..B.#","#.........#","###~~~~~###","###~~~~~###","###~~~~~###","#....F....#","###########"]},
+{"name":"Outpost","tip":"Hard sector. No hints from here on.","rows":["##########","#.v~..^..#","#.F~.#.B.#","####.#...#","#.....T..#","#..#####.#","#........#","#........#","##########"]},
+{"name":"Switchyard","tip":"Hard sector. No hints from here on.","rows":["############","#..BX...~..#","#.X..####b##","#...~.T.#F##","#.....b.#..#","#.......#..#","############"]},
+{"name":"Scrapyard","tip":"Hard sector. No hints from here on.","rows":["############","#.........~#","#.T...###~.#","#B...b.~...#","#......##..#","#.....3.F..#","#.B#####..##","#..#......##","############"]},
+{"name":"Breakwater","tip":"Hard sector. No hints from here on.","rows":["###########","#..#####..#","#######...#","#.....TBb.#","#..###....#","#......1..#","#.........#","##.....~^##","##.....~.F#","###########"]},
+{"name":"Watchtower","tip":"Hard sector. No hints from here on.","rows":["############","#.#.#.^....#","#.#.#......#","#.#.#......#","#.~.T.bB####","#F~........#","#.~...#.#.##","#.~...#.#.##","############"]},
+{"name":"Marsh","tip":"Hard sector. No hints from here on.","rows":["#############","#.F~..##....#","#.~~........#","#~.~......T##","#..~B..####.#","#..##b......#","#...........#","#############"]},
+{"name":"Gridlock","tip":"Hard sector. No hints from here on.","rows":["############","#....<B4..T#","#.....B...##","#..~B.4.b.##","#...#...####","#...###~F.##","#...######.#","############"]},
+{"name":"Citadel","tip":"Hard sector. No hints from here on.","rows":["###########","#...~.....#","#.F~...1..#","#..~##b.#.#","###~...^#.#","##.....T#.#","##......#.#","#....B..#.#","#.....#####","###########"]}];
+const ORIG_NAMES=["First Shot","Pontoon","Round the Corner","Line of Sight","Return Fire","Turntable","Black Ice","One-Way Belt","Wormholes","Thin Ice"];
+const PAR=[22,39,13,18,18,16,23,25,19,10,10,8,23,17,19,45,23,32,38,59,37,45,45,49,47,56,54,61];
+(function(){
+const $=id=>document.getElementById(id),cv=$('cv'),ctx=cv.getContext('2d');
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let li=0,S,hist=[],moves=0,playing=false,queue=[],bad=null,view=null,beam=null,cell=32,C={};
+const solved=new Set();
+const NAMES=['bg','ink','floor','grid','wall','wallhi','brick','brickln','crate','crateln','water','waterhi','ice','icehi','belt','beltln','glass','mirror','mirrorback','tank','tankdk','enemy','enemydk','deadat','laser','flag','accent'];
+function colors(){const cs=getComputedStyle(document.documentElement);NAMES.forEach(n=>C[n]=cs.getPropertyValue('--'+n).trim());}
+function save(){try{localStorage.setItem('blt2',JSON.stringify({s:[...solved],li}));}catch(e){}}
+function load(){try{const o=JSON.parse(localStorage.getItem('blt')||'null');if(o&&o.s)o.s.forEach(k=>ORIG_NAMES[k]&&solved.add(ORIG_NAMES[k]));}catch(e){}
+  try{const d=JSON.parse(localStorage.getItem('blt2')||'{}');(d.s||[]).forEach(n=>solved.add(n));if(d.li>=0&&d.li<LEVELS.length)li=d.li;}catch(e){}}
+
+function size(){
+  const W=$('board').clientWidth-16,H=Math.max(220,innerHeight-360);
+  cell=Math.max(14,Math.min(Math.floor(W/S.w),Math.floor(H/S.h),52));
+  const dpr=window.devicePixelRatio||1;
+  cv.style.width=cell*S.w+'px';cv.style.height=cell*S.h+'px';
+  cv.width=Math.round(cell*S.w*dpr);cv.height=Math.round(cell*S.h*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);draw();
+}
+function rot(d,fn){const u=cell/2;ctx.save();ctx.translate(u,u);ctx.rotate(d*Math.PI/2);fn(u);ctx.restore();}
+function vehicle(d,body,dark){rot(d,u=>{
+  ctx.fillStyle=dark;ctx.fillRect(-.8*u,-.72*u,.32*u,1.5*u);ctx.fillRect(.48*u,-.72*u,.32*u,1.5*u);
+  ctx.fillStyle=body;ctx.fillRect(-.5*u,-.55*u,u,1.2*u);
+  ctx.fillStyle=dark;ctx.fillRect(-.1*u,-.98*u,.2*u,u);
+  ctx.beginPath();ctx.arc(0,.08*u,.3*u,0,7);ctx.fill();
+  ctx.fillStyle=body;ctx.beginPath();ctx.arc(0,.08*u,.16*u,0,7);ctx.fill();
+});}
+function tri(k,round){rot(k,u=>{
+  const m=round?.56*u:.84*u;
+  if(round){ctx.fillStyle=C.mirrorback;ctx.beginPath();ctx.arc(0,0,.86*u,0,7);ctx.fill();ctx.strokeStyle=C.ink;ctx.lineWidth=Math.max(1,u*.08);ctx.stroke();}
+  ctx.fillStyle=round?C.wall:C.mirrorback;ctx.beginPath();ctx.moveTo(-m,-m);ctx.lineTo(m,m);ctx.lineTo(-m,m);ctx.closePath();ctx.fill();
+  ctx.strokeStyle=C.mirror;ctx.lineWidth=Math.max(2,u*.2);ctx.lineCap='round';ctx.beginPath();ctx.moveTo(-m,-m);ctx.lineTo(m,m);ctx.stroke();
+});}
+function tile(s,x,y){
+  const c=cell,i=y*s.w+x,t=s.ter[i],o=s.obj[i];
+  ctx.save();ctx.translate(x*c,y*c);ctx.lineCap='butt';
+  ctx.fillStyle=C.floor;ctx.fillRect(0,0,c,c);
+  if(t==='~'||t==='='){
+    ctx.fillStyle=C.water;ctx.fillRect(0,0,c,c);ctx.strokeStyle=C.waterhi;ctx.lineWidth=Math.max(1,c*.05);
+    for(let k=0;k<2;k++){const yy=c*(.33+.36*k);ctx.beginPath();ctx.moveTo(c*.12,yy);ctx.quadraticCurveTo(c*.31,yy-c*.13,c*.5,yy);ctx.quadraticCurveTo(c*.69,yy+c*.13,c*.88,yy);ctx.stroke();}
+    if(t==='='){ctx.fillStyle=C.crate;ctx.fillRect(c*.06,c*.06,c*.88,c*.88);ctx.strokeStyle=C.crateln;ctx.lineWidth=Math.max(1,c*.05);for(let k=1;k<4;k++){ctx.beginPath();ctx.moveTo(c*.06,c*k/4);ctx.lineTo(c*.94,c*k/4);ctx.stroke();}}
+  }else if(t==='i'||t==='t'){
+    ctx.fillStyle=C.ice;ctx.fillRect(0,0,c,c);ctx.strokeStyle=C.icehi;ctx.lineWidth=Math.max(1,c*.07);
+    ctx.beginPath();ctx.moveTo(c*.18,c*.5);ctx.lineTo(c*.5,c*.18);ctx.moveTo(c*.5,c*.82);ctx.lineTo(c*.82,c*.5);ctx.stroke();
+    if(t==='t'){ctx.strokeStyle=C.water;ctx.lineWidth=Math.max(1,c*.05);ctx.beginPath();ctx.moveTo(c*.1,c*.3);ctx.lineTo(c*.4,c*.45);ctx.lineTo(c*.35,c*.7);ctx.lineTo(c*.6,c*.9);ctx.moveTo(c*.4,c*.45);ctx.lineTo(c*.7,c*.3);ctx.lineTo(c*.92,c*.42);ctx.stroke();}
+  }else if(t==='F'){
+    ctx.fillStyle=C.ink;ctx.fillRect(c*.26,c*.14,c*.08,c*.74);
+    ctx.fillStyle=C.flag;ctx.beginPath();ctx.moveTo(c*.34,c*.16);ctx.lineTo(c*.82,c*.32);ctx.lineTo(c*.34,c*.5);ctx.closePath();ctx.fill();
+  }else if(t[0]==='c'){
+    ctx.fillStyle=C.belt;ctx.fillRect(0,0,c,c);
+    rot(+t[1],u=>{ctx.strokeStyle=C.beltln;ctx.lineWidth=Math.max(1.5,u*.16);ctx.lineJoin='miter';for(const yy of[-.1,.5]){ctx.beginPath();ctx.moveTo(-.5*u,yy*u);ctx.lineTo(0,(yy-.45)*u);ctx.lineTo(.5*u,yy*u);ctx.stroke();}});
+  }else if('XYZ'.includes(t)){
+    const col={X:C.accent,Y:C.water,Z:C.flag}[t];
+    ctx.fillStyle=C.wall;ctx.beginPath();ctx.arc(c/2,c/2,c*.42,0,7);ctx.fill();
+    ctx.strokeStyle=col;ctx.lineWidth=Math.max(1.5,c*.08);for(const r of[.34,.18]){ctx.beginPath();ctx.arc(c/2,c/2,c*r,0,7);ctx.stroke();}
+  }
+  if(t==='.'||t==='F'){ctx.strokeStyle=C.grid;ctx.lineWidth=1;ctx.strokeRect(.5,.5,c-1,c-1);}
+  if(o==='#'){
+    ctx.fillStyle=C.wall;ctx.fillRect(0,0,c,c);ctx.fillStyle=C.wallhi;ctx.fillRect(c*.12,c*.12,c*.76,c*.76);
+  }else if(o==='b'){
+    ctx.fillStyle=C.brick;ctx.fillRect(0,0,c,c);ctx.strokeStyle=C.brickln;ctx.lineWidth=Math.max(1,c*.05);ctx.beginPath();
+    for(let k=0;k<=3;k++){ctx.moveTo(0,c*k/3);ctx.lineTo(c,c*k/3);}
+    ctx.moveTo(c*.5,0);ctx.lineTo(c*.5,c/3);ctx.moveTo(c*.25,c/3);ctx.lineTo(c*.25,c*2/3);ctx.moveTo(c*.75,c/3);ctx.lineTo(c*.75,c*2/3);ctx.moveTo(c*.5,c*2/3);ctx.lineTo(c*.5,c);ctx.stroke();
+  }else if(o==='B'){
+    ctx.fillStyle=C.crate;ctx.fillRect(c*.08,c*.08,c*.84,c*.84);ctx.strokeStyle=C.crateln;ctx.lineWidth=Math.max(1.5,c*.07);
+    ctx.strokeRect(c*.12,c*.12,c*.76,c*.76);ctx.beginPath();ctx.moveTo(c*.12,c*.12);ctx.lineTo(c*.88,c*.88);ctx.moveTo(c*.88,c*.12);ctx.lineTo(c*.12,c*.88);ctx.stroke();
+  }else if(o==='G'){
+    ctx.globalAlpha=.55;ctx.fillStyle=C.glass;ctx.fillRect(c*.04,c*.04,c*.92,c*.92);ctx.globalAlpha=1;
+    ctx.strokeStyle=C.glass;ctx.lineWidth=Math.max(1.5,c*.07);ctx.strokeRect(c*.07,c*.07,c*.86,c*.86);
+    ctx.strokeStyle=C.icehi;ctx.beginPath();ctx.moveTo(c*.22,c*.5);ctx.lineTo(c*.5,c*.22);ctx.moveTo(c*.34,c*.66);ctx.lineTo(c*.66,c*.34);ctx.stroke();
+  }else if(o&&o[0]==='M')tri(+o[1],false);
+  else if(o&&o[0]==='R')tri(+o[1],true);
+  else if(o&&o[0]==='A')vehicle(+o[1],C.enemy,C.enemydk);
+  else if(o&&o[0]==='D'){vehicle(+o[1],C.deadat,C.wall);ctx.strokeStyle=C.ink;ctx.lineWidth=Math.max(1.5,c*.08);ctx.beginPath();ctx.moveTo(c*.25,c*.25);ctx.lineTo(c*.75,c*.75);ctx.moveTo(c*.75,c*.25);ctx.lineTo(c*.25,c*.75);ctx.stroke();}
+  ctx.restore();
+}
+function draw(){
+  const s=view||S,c=cell;if(!s)return;
+  ctx.clearRect(0,0,c*s.w,c*s.h);
+  for(let y=0;y<s.h;y++)for(let x=0;x<s.w;x++)tile(s,x,y);
+  ctx.save();ctx.translate(s.tx*c,s.ty*c);
+  if(s.dead){
+    const wet=s.ter[s.ty*s.w+s.tx]==='~';
+    ctx.strokeStyle=wet?C.waterhi:C.ink;ctx.fillStyle=wet?'transparent':C.ink;ctx.lineWidth=Math.max(1.5,c*.07);
+    ctx.beginPath();ctx.arc(c/2,c/2,c*.3,0,7);wet?ctx.stroke():ctx.fill();
+    if(!wet){ctx.strokeStyle=C.laser;for(let k=0;k<8;k++){const a=k*Math.PI/4;ctx.beginPath();ctx.moveTo(c/2+Math.cos(a)*c*.34,c/2+Math.sin(a)*c*.34);ctx.lineTo(c/2+Math.cos(a)*c*.46,c/2+Math.sin(a)*c*.46);ctx.stroke();}}
+  }else vehicle(s.td,C.tank,C.tankdk);
+  ctx.restore();
+  if(bad){ctx.save();ctx.strokeStyle=C.laser;ctx.lineWidth=Math.max(2,c*.1);ctx.lineCap='round';const m=c*.25;ctx.beginPath();ctx.moveTo(bad.x*c+m,bad.y*c+m);ctx.lineTo(bad.x*c+c-m,bad.y*c+c-m);ctx.moveTo(bad.x*c+c-m,bad.y*c+m);ctx.lineTo(bad.x*c+m,bad.y*c+c-m);ctx.stroke();ctx.restore();}
+  if(beam){
+    const p=beam.laser.map(q=>[(q[0]+.5)*c,(q[1]+.5)*c]),n=p.length;
+    if(!beam.hostile&&!beam.self&&n>1){const a=p[n-2],b=p[n-1];p[n-1]=[a[0]+(b[0]-a[0])*.5,a[1]+(b[1]-a[1])*.5];}
+    ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();p.forEach((q,k)=>k?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));
+    ctx.strokeStyle=C.laser;ctx.shadowColor=C.laser;ctx.shadowBlur=c*.35;ctx.lineWidth=Math.max(2.5,c*.14);ctx.stroke();
+    ctx.shadowBlur=0;ctx.strokeStyle='#fff';ctx.lineWidth=Math.max(1,c*.045);ctx.stroke();ctx.restore();
+  }
+}
+function hud(){
+  $('lname').textContent=String(li+1).padStart(2,'0')+' / '+LEVELS[li].name;
+  $('count').textContent='Moves '+moves+'  ·  Best possible '+PAR[li];
+  $('tip').textContent=LEVELS[li].tip;
+  [...$('strip').children].forEach((b,k)=>{b.className=solved.has(LEVELS[k].name)?'done':'';b.setAttribute('aria-current',k===li);});
+}
+function banner(kind,title,text,btns){
+  const b=$('banner');if(!kind){b.hidden=true;return;}
+  b.className=kind;$('btitle').textContent=title;$('btext').textContent=text;
+  const row=$('bbtns');row.textContent='';
+  btns.forEach(([label,fn,pri])=>{const e=document.createElement('button');e.className='btn'+(pri?' pri':'');e.textContent=label;e.onclick=fn;row.appendChild(e);});
+  b.hidden=false;
+}
+function go(n){li=(n+LEVELS.length)%LEVELS.length;S=parseLevel(LEVELS[li].rows);hist=[];moves=0;queue=[];view=null;beam=null;banner();save();hud();size();}
+function undo(){if(playing||!hist.length)return;S=hist.pop();moves--;banner();hud();draw();}
+function ended(){
+  if(S.won){
+    solved.add(LEVELS[li].name);save();hud();
+    const all=solved.size===LEVELS.length,last=li===LEVELS.length-1;
+    banner('won','Flag captured',moves+' moves. The shortest route is '+PAR[li]+'.'+(all?' Every sector cleared.':''),
+      [[last?'Back to sector 1':'Next sector',()=>go(li+1),true],['Replay',()=>go(li)]]);
+  }else if(S.dead){
+    banner('lost','Tank destroyed',S.ter[S.ty*S.w+S.tx]==='~'?'It sank.':'Caught in a beam.',[['Undo',undo,true],['Restart',()=>go(li)]]);
+  }
+}
+function play(frames,done){
+  if(reduce||!frames.length){draw();done();return;}
+  let k=0;playing=true;
+  (function next(){
+    if(k>=frames.length){playing=false;view=null;beam=null;draw();done();return;}
+    const f=frames[k++];view=f.s;beam=f.laser?f:null;draw();setTimeout(next,f.laser?130:50);
+  })();
+}
+function doAct(a,auto){
+  if(!auto)queue=[];
+  if(playing){if(!auto)queue=[a];return;}
+  if(S.dead||S.won){queue=[];return;}
+  const before=clone(S),frames=[];
+  if(!act(S,a,frames)){queue=[];return;}
+  hist.push(before);if(hist.length>2000)hist.shift();moves++;hud();
+  play(frames,()=>{if(S.won||S.dead){queue=[];ended();}else if(queue.length)doAct(queue.shift(),true);});
+}
+// Shortest safe sequence of drive/turn presses that leaves the tank on (gx,gy). Simulates ice, belts, tunnels and gun lines.
+function route(gx,gy){
+  const t0=S.ter,k=s=>{let r=s.tx+','+s.ty+','+s.td;for(let i=0;i<s.ter.length;i++)if(s.ter[i]!==t0[i])r+='!'+i;return r;};
+  let q=[[clone(S),[]]];const seen=new Set([k(S)]);
+  while(q.length&&seen.size<40000){
+    const nq=[];
+    for(const [s,p] of q)for(let a=0;a<4;a++){
+      const n=clone(s);if(!act(n,a,null)||n.dead)continue;
+      const np=p.concat(a);
+      if((n.tx===gx&&n.ty===gy)||(n.won&&S.ter[gy*S.w+gx]==='F'&&n.tx===gx&&n.ty===gy))return np;
+      if(n.won)continue;
+      const kk=k(n);if(seen.has(kk))continue;seen.add(kk);nq.push([n,np]);
+    }
+    q=nq;
+  }
+  return null;
+}
+function tapBoard(e){
+  if(!S||S.dead||S.won)return;
+  const r=cv.getBoundingClientRect(),x=Math.floor((e.clientX-r.left)/cell),y=Math.floor((e.clientY-r.top)/cell);
+  if(x<0||y<0||x>=S.w||y>=S.h)return;
+  if(x===S.tx&&y===S.ty){doAct(4);return;}
+  const p=route(x,y);
+  if(!p){bad={x,y};draw();setTimeout(()=>{bad=null;draw();},450);return;}
+  if(playing){queue=p;return;}
+  queue=p.slice(1);doAct(p[0],true);
+}
+function hold(el,a){
+  let t=null;const stop=()=>{clearTimeout(t);t=null;};
+  el.addEventListener('pointerdown',e=>{e.preventDefault();doAct(a);const rep=()=>{doAct(a);t=setTimeout(rep,150);};stop();t=setTimeout(rep,340);});
+  ['pointerup','pointerleave','pointercancel'].forEach(n=>el.addEventListener(n,stop));
+  el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();if(!e.repeat)doAct(a);}});
+}
+function start(data){
+  load();if(data&&data.li>=0&&data.li<LEVELS.length)li=data.li;
+  LEVELS.forEach((L,k)=>{const b=document.createElement('button');b.textContent=String(k+1).padStart(2,'0');b.title=L.name;b.onclick=()=>{go(k);b.blur();};$('strip').appendChild(b);});
+  for(let d=0;d<4;d++)hold($('k'+d),d);hold($('fire'),4);
+  cv.addEventListener('pointerdown',e=>{e.preventDefault();tapBoard(e);});
+  $('undo').onclick=undo;$('reset').onclick=()=>{if(!playing)go(li);};
+  const KEYS={ArrowUp:0,ArrowRight:1,ArrowDown:2,ArrowLeft:3,w:0,d:1,s:2,a:3,' ':4};
+  addEventListener('keydown',e=>{
+    if(e.ctrlKey||e.metaKey||e.altKey)return;
+    const k=e.key.length===1?e.key.toLowerCase():e.key;
+    if(k in KEYS){e.preventDefault();doAct(KEYS[k]);}
+    else if(k==='u'||k==='z'||k==='Backspace'){e.preventDefault();undo();}
+    else if(k==='r'){if(!playing)go(li);}
+  });
+  addEventListener('resize',size);
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{colors();draw();});
+  new MutationObserver(()=>{colors();draw();}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+  colors();$('nsec').textContent=LEVELS.length;go(li);
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(size);
+  try{window.claude?.hot?.snapshot?.(()=>({li}));}catch(e){}
+}
+const hot=window.claude&&window.claude.hot;
+if(hot&&hot.ready)hot.ready(start);else start((hot&&hot.data)||{});
+})();
+
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+</script>
+</body></html>

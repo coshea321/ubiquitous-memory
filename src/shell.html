@@ -1,0 +1,93 @@
+<title>Beamline Tank</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: one centred column like a field-manual page: stencilled masthead, level strip, board, then a control deck. */
+:root{
+  --bg:#d8d5c0; --panel:#c8c5ad; --ink:#22271b; --muted:#5a604c; --line:#9d9d83; --accent:#b23a1c; --ok:#3f6b2c;
+  --floor:#bdb99c; --grid:#a9a588; --wall:#4b5140; --wallhi:#656c56; --brick:#a2573a; --brickln:#6e3622;
+  --crate:#c79a4e; --crateln:#7d5a22; --water:#3f7896; --waterhi:#8fbdd1; --ice:#d9ecef; --icehi:#ffffff;
+  --belt:#3a3d38; --beltln:#e0b83a; --glass:#9fd0d6; --mirror:#f4f7f2; --mirrorback:#6a7480;
+  --tank:#3f6b2c; --tankdk:#22381a; --enemy:#a3301c; --enemydk:#571709; --deadat:#77786f; --laser:#ff3b1f; --flag:#d8a514;
+  --display:"Black Ops One","Stencil","Impact",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#151912; --panel:#1f251b; --ink:#dfe3cd; --muted:#959d83; --line:#3b4333; --accent:#ff6a45; --ok:#8fc56f;
+  --floor:#343a2c; --grid:#40473a; --wall:#0d100b; --wallhi:#262c20; --ice:#b9d6dc; --water:#2c5f7c; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#151912; --panel:#1f251b; --ink:#dfe3cd; --muted:#959d83; --line:#3b4333; --accent:#ff6a45; --ok:#8fc56f;
+  --floor:#343a2c; --grid:#40473a; --wall:#0d100b; --wallhi:#262c20; --ice:#b9d6dc; --water:#2c5f7c; color-scheme:dark }
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--mono);font-size:14px;line-height:1.5}
+.wrap{max-width:680px;margin:0 auto;padding-inline:16px;padding-block:18px 28px;display:flex;flex-direction:column;gap:12px}
+header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:2px solid var(--ink);padding-bottom:6px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(26px,7vw,38px);letter-spacing:.04em;margin:0;line-height:1;text-transform:uppercase}
+.sub{margin:0;color:var(--muted);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.strip{display:flex;gap:6px;flex-wrap:wrap}
+.strip button{width:34px;height:30px;font:600 12px var(--mono);font-variant-numeric:tabular-nums;background:transparent;color:var(--ink);border:1.5px solid var(--line);border-radius:2px;cursor:pointer;padding:0}
+.strip button.done{background:var(--ok);border-color:var(--ok);color:var(--bg)}
+.strip button[aria-current="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink)}
+.meta{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.meta h2{font-family:var(--display);font-weight:400;font-size:20px;margin:0;letter-spacing:.04em;text-transform:uppercase}
+.meta .n{color:var(--muted);font-variant-numeric:tabular-nums;font-size:13px}
+#tip{margin:0;color:var(--muted);min-height:3em;max-width:62ch}
+.board{position:relative;display:flex;justify-content:center;background:var(--panel);border:2px solid var(--ink);padding:6px;min-width:0}
+canvas{display:block;max-width:100%;touch-action:none;cursor:pointer}
+#banner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:12px;background:color-mix(in srgb,var(--bg) 82%,transparent)}
+#banner strong{font-family:var(--display);font-weight:400;font-size:clamp(22px,6vw,32px);letter-spacing:.05em;text-transform:uppercase}
+#banner.lost strong{color:var(--accent)} #banner.won strong{color:var(--ok)}
+#banner p{margin:0} .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.btn{font:600 13px var(--mono);letter-spacing:.06em;text-transform:uppercase;background:var(--panel);color:var(--ink);border:1.5px solid var(--ink);border-radius:2px;padding:9px 14px;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.btn.pri{background:var(--ink);color:var(--bg)}
+.btn:active{transform:translateY(1px)}
+button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.deck{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.pad{display:grid;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px);gap:4px}
+.pad .btn{padding:0;font-size:18px}
+.pad .u{grid-area:1/2}.pad .l{grid-area:2/1}.pad .r{grid-area:2/3}.pad .d{grid-area:3/2}
+.side{display:flex;flex-direction:column;gap:8px;align-items:stretch;flex:1;min-width:150px;max-width:260px}
+#fire{background:var(--accent);border-color:var(--accent);color:#fff;font-family:var(--display);font-weight:400;font-size:22px;padding:18px 14px;letter-spacing:.1em}
+.side .row .btn{flex:1}
+details{border-top:1.5px solid var(--line);padding-top:10px}
+summary{cursor:pointer;font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:12px}
+dl{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;margin:10px 0 0}
+dt{font-weight:600} dd{margin:0;color:var(--muted);min-width:0}
+kbd{font:inherit;border:1px solid var(--line);border-radius:2px;padding:0 4px}
+</style>
+<main class="wrap">
+  <header><h1>Beamline Tank</h1><p class="sub">A LaserTank-style puzzle &middot; <span id="nsec"></span> sectors</p></header>
+  <nav class="strip" id="strip" aria-label="Levels"></nav>
+  <div class="meta"><h2 id="lname"></h2><span class="n" id="count"></span></div>
+  <p id="tip"></p>
+  <div class="board" id="board"><canvas id="cv" aria-label="Game board"></canvas>
+    <div id="banner" hidden><strong id="btitle"></strong><p id="btext"></p><div class="row" id="bbtns"></div></div>
+  </div>
+  <div class="deck">
+    <div class="pad" aria-label="Drive">
+      <button class="btn u" id="k0" aria-label="Up">&#9650;</button><button class="btn l" id="k3" aria-label="Left">&#9664;</button>
+      <button class="btn r" id="k1" aria-label="Right">&#9654;</button><button class="btn d" id="k2" aria-label="Down">&#9660;</button>
+    </div>
+    <div class="side">
+      <button class="btn" id="fire">Fire</button>
+      <div class="row"><button class="btn" id="undo">Undo</button><button class="btn" id="reset">Restart</button></div>
+    </div>
+  </div>
+  <details>
+    <summary>Field manual</summary>
+    <dl>
+      <dt>Controls</dt><dd><kbd>Arrows</kbd> or <kbd>WASD</kbd> drive (first press turns, second moves). <kbd>Space</kbd> fires. <kbd>U</kbd> undoes, <kbd>R</kbd> restarts. Tap a square to drive there by the safest route; tap your tank to fire.</dd>
+      <dt>Goal</dt><dd>Drive onto the yellow flag.</dd>
+      <dt>Brick</dt><dd>Destroyed by one shot.</dd>
+      <dt>Crate</dt><dd>Each shot pushes it one square. In water it becomes a bridge.</dd>
+      <dt>Mirror</dt><dd>Bends the beam off its bright diagonal. A hit on a dull side pushes it. It sinks in water.</dd>
+      <dt>Round mirror</dt><dd>Fixed in place. A hit on a dull side turns it clockwise.</dd>
+      <dt>Glass</dt><dd>Blocks tanks, lets lasers through.</dd>
+      <dt>Anti-tank</dt><dd>Shoots you on sight along its barrel line. Killed only by a hit on the muzzle; other hits push it.</dd>
+      <dt>Water</dt><dd>Sinks your tank.</dd>
+      <dt>Ice</dt><dd>Tanks and pushed objects slide until stopped. Cracked ice turns to water after you leave it.</dd>
+      <dt>Belt</dt><dd>Carries the tank in the arrow direction.</dd>
+      <dt>Tunnel</dt><dd>Teleports to the matching tunnel if its exit is clear.</dd>
+    </dl>
+  </details>
+</main>
+<script>

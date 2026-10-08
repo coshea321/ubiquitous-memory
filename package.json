@@ -1,0 +1,11 @@
+{
+  "name": "beamline-tank",
+  "private": true,
+  "description": "A LaserTank-style puzzle game: single-file web page + installable PWA.",
+  "scripts": {
+    "build": "node tools/build.js",
+    "solve": "node tools/solve.js",
+    "serve": "npx --yes http-server docs -p 8080 -c-1",
+    "check": "node tools/check.js"
+  }
+}
