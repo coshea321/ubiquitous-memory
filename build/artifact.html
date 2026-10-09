@@ -401,12 +401,28 @@ function route(gx,gy){
   }
   return null;
 }
+// Turn (if needed) and fire so the beam hits the object on (gx,gy), mirror bounces included. Tries the facing first, then clockwise.
+// Skips shots that change nothing or destroy the tank. Returns the presses, or null.
+function aim(gx,gy){
+  if(!S.obj[gy*S.w+gx])return null;
+  for(let k=0;k<4;k++){
+    const d=(S.td+k)%4,n=clone(S),F=[];
+    if(k)act(n,d,null);
+    act(n,4,F);
+    if(n.dead)continue;
+    const pts=F.find(f=>f.laser).laser;
+    if(!pts.some(q=>q[0]===gx&&q[1]===gy))continue;
+    if(n.obj.join()===S.obj.join()&&n.ter.join()===S.ter.join()&&n.tx===S.tx&&n.ty===S.ty)continue;
+    return k?[d,4]:[4];
+  }
+  return null;
+}
 function tapBoard(e){
   if(!S||S.dead||S.won)return;
   const r=cv.getBoundingClientRect(),x=Math.floor((e.clientX-r.left)/cell),y=Math.floor((e.clientY-r.top)/cell);
   if(x<0||y<0||x>=S.w||y>=S.h)return;
   if(x===S.tx&&y===S.ty){doAct(4);return;}
-  const p=route(x,y);
+  const p=route(x,y)||aim(x,y);
   if(!p){bad={x,y};draw();setTimeout(()=>{bad=null;draw();},450);return;}
   if(playing){queue=p;return;}
   queue=p.slice(1);doAct(p[0],true);

@@ -1,5 +1,5 @@
 // Smoke test of the built PWA: serves docs/, loads it in headless Chromium, checks for script errors,
-// service-worker registration, an offline reload, tap-to-drive, the collapsible sector strip, and switching level mid-animation. Needs: npm i -D playwright (or a Chromium on PATH).
+// service-worker registration, an offline reload, tap-to-drive, tap-to-shoot, the collapsible sector strip, and switching level mid-animation. Needs: npm i -D playwright (or a Chromium on PATH).
 const http=require('http'),fs=require('fs'),path=require('path');
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'..','docs');
@@ -19,12 +19,21 @@ const srv=http.createServer((q,r)=>{let f=path.join(root,decodeURIComponent(q.ur
   const box=await p.locator('#cv').boundingBox();const c=box.width/12;
   await p.mouse.click(box.x+c*4.5,box.y+c*1.5);await p.waitForTimeout(800);
   const moves=await p.locator('#count').textContent();
+  // Tap-to-shoot: drive beside the brick (arriving face down), then tap the brick itself: turn + fire = 2 moves.
+  await p.mouse.click(box.x+c*4.5,box.y+c*3.5);await p.waitForTimeout(800);
+  const n0=+(await p.locator('#count').textContent()).match(/Moves (\d+)/)[1];
+  await p.mouse.click(box.x+c*5.5,box.y+c*3.5);await p.waitForTimeout(1200);
+  const n1=+(await p.locator('#count').textContent()).match(/Moves (\d+)/)[1];
+  // Then the brick's square is open: tapping it again drives one step onto it.
+  await p.mouse.click(box.x+c*5.5,box.y+c*3.5);await p.waitForTimeout(800);
+  const n2=+(await p.locator('#count').textContent()).match(/Moves (\d+)/)[1];
+  const shot=n1-n0===2&&n2-n1===1;
   // Switching level mid-animation: no frame of the old level may be drawn after the switch.
   await p.click('#sectors summary');await p.click('#strip button:nth-child(1)');await p.waitForTimeout(200);
   const frames=await p.evaluate(()=>new Promise(r=>{const cv=document.getElementById('cv'),out=[];
     dispatchEvent(new KeyboardEvent('keydown',{key:' '}));document.querySelector('#strip button:nth-child(2)').click();
     const t=setInterval(()=>{out.push(cv.toDataURL());if(out.length>=40){clearInterval(t);r(out);}},15);}));
   const stale=frames.filter(f=>f!==frames[frames.length-1]).length;
-  console.log({errors:errs,sectorsCollapse:shut&&reshut,serviceWorker:sw,offlineTitle:offline,afterTap:moves,staleFramesAfterSwitch:stale});
-  await b.close();srv.close();process.exit(errs.length||!shut||!reshut||!sw||!/Moves [1-9]/.test(moves)||stale?1:0);
+  console.log({errors:errs,sectorsCollapse:shut&&reshut,serviceWorker:sw,offlineTitle:offline,afterTap:moves,tapToShoot:shot,staleFramesAfterSwitch:stale});
+  await b.close();srv.close();process.exit(errs.length||!shut||!reshut||!sw||!/Moves [1-9]/.test(moves)||!shot||stale?1:0);
 })();
