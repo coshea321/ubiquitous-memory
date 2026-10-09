@@ -23,7 +23,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--mono);font-size:14p
 header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:2px solid var(--ink);padding-bottom:6px}
 h1{font-family:var(--display);font-weight:400;font-size:clamp(26px,7vw,38px);letter-spacing:.04em;margin:0;line-height:1;text-transform:uppercase}
 .sub{margin:0;color:var(--muted);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
-.ver{text-transform:none;opacity:.75;font-variant-numeric:tabular-nums}
+.ver{white-space:nowrap;text-transform:none;opacity:.75;font-variant-numeric:tabular-nums}
 .sectors{border:0;padding:0}
 .sectors summary{padding:4px 0}
 .sectors .n{color:var(--muted);font-weight:500;letter-spacing:.04em;font-variant-numeric:tabular-nums}
@@ -59,7 +59,7 @@ dt{font-weight:600} dd{margin:0;color:var(--muted);min-width:0}
 kbd{font:inherit;border:1px solid var(--line);border-radius:2px;padding:0 4px}
 </style>
 <main class="wrap">
-  <header><h1>Beamline Tank</h1><p class="sub">A LaserTank-style puzzle &middot; <span id="nsec"></span> sectors &middot; <span class="ver" title="Version">v1.1</span></p></header>
+  <header><h1>Beamline Tank</h1><p class="sub">A LaserTank-style puzzle &middot; <span id="nsec"></span> sectors <span class="ver" title="Version">&middot; v1.1</span></p></header>
   <details class="sectors" id="sectors">
     <summary>Sectors <span class="n" id="sprog"></span></summary>
     <nav class="strip" id="strip" aria-label="Levels"></nav>
@@ -241,9 +241,19 @@ const LEVELS=[{"name":"First Shot","tip":"Bricks crumble under laser fire. Press
 {"name":"Foundry","tip":"Extra-hard sector. Plan every shot before you fire.","rows":["############","#..#..B4b..#","#.bb..B..B##","#..##.5.b..#","#...#...####","#..T#.#~F..#","#....#.#...#","############"]},
 {"name":"Twin Guns","tip":"Extra-hard sector. Plan every shot before you fire.","rows":["###########","#...~..#..#","#.F~...1..#","#...#...#.#","#.##.#^^5.#","##....T.#.#","#..b~#...##","#....B..#.#","#.....#..##","###########"]},
 {"name":"Crossfire","tip":"Extra-hard sector. Plan every shot before you fire.","rows":["#############","#.F~.6#.....#","#.~~..v.~...#","#~.~<.~.#.T##","#..~B..<#~#.#","#..##.......#","#.......~...#","#############"]},
-{"name":"Last Stand","tip":"Extra-hard sector. Plan every shot before you fire.","rows":["############","###.bb^T...#","#3..#.5.#..#","#.#..~...~.#","#.~..#bB#.##","#FG....~...#","#.~..2~....#","#..#.b..~..#","############"]}];
+{"name":"Last Stand","tip":"Extra-hard sector. Plan every shot before you fire.","rows":["############","###.bb^T...#","#3..#.5.#..#","#.#..~...~.#","#.~..#bB#.##","#FG....~...#","#.~..2~....#","#..#.b..~..#","############"]},
+{"name":"Keep","tip":"Hardest sector. A hundred moves or more: map the whole route before you move.","rows":["###########","#...~..b~.#","#.F#...1..#","#.2.##b.#.#","##.~...^#.#","#.4~....6.#","#~...~..#.#","#T~..Bb#..#","#....#..~.#","###########"]},
+{"name":"Furnace","tip":"Hardest sector. A hundred moves or more: map the whole route before you move.","rows":["############","#..#..^4b..#","#ibb..B..B##","#..~.>5.b..#","#.7.#.2.#G.#","#B..7.#~..G#","#...T#.#F..#","############"]},
+{"name":"Gunline","tip":"Hardest sector. A hundred moves or more: map the whole route before you move.","rows":["###########","#.~....#..#","##.~...1..#","##F##...B##","#.##.#^^5.#","##b...T.#.#","#..b~#~3.~#","#....B..#.#","#..#..G...#","###########"]},
+{"name":"Slag Heap","tip":"Hardest sector. A hundred moves or more: map the whole route before you move.","rows":["############","#....~##b..#","#.G.bbB..B.#","#..#..5.bB.#","#~..#.#b####","#..T7..~F..#","#....#.#...#","############"]},
+{"name":"Rockfall","tip":"Hardest sector. A hundred moves or more: map the whole route before you move.","rows":["############","##b.......##","#..G4~..#..#","#T7#.bb~.~.#","##4....44..#","#..b.~#.F#.#","#.B7...6..##","#..G...#...#","############"]},
+{"name":"Killbox","tip":"Hardest sector. A hundred moves or more: map the whole route before you move.","rows":["#############","#.F~.6#...>.#","###b..v.~...#","#..~<.~.#.T##","#.G~B..#.~#.#","#...#.......#","#1..........#","#############"]},
+{"name":"Pincer","tip":"Hardest sector. A hundred moves or more: map the whole route before you move.","rows":["###########","##.v...#..#","#.F~...2..#","#...#...#.#","####.#^^5.#","##.<.b..#.#","#.Tb.#G..##","#....B.4#.#","#..#..G.#.#","###########"]},
+{"name":"Overwatch","tip":"Hardest sector. A hundred moves or more: map the whole route before you move.","rows":["#############","##F~.6#.b..1#","#.~~..~.~...#","#..~<.~b#.T.#","#..~B..<.~#.#","#...#...#...#","#...B...~.~~#","#############"]},
+{"name":"Holdout","tip":"Hardest sector. A hundred moves or more: map the whole route before you move.","rows":["############","#...bb^T...#","#..b#.5.##.#","#.~..~...~.#","#~.#.#3B#.v#","#FG....~..^#","#.~...~....#","#1..#b..~..#","############"]},
+{"name":"Endgame","tip":"Hardest sector. A hundred moves or more: map the whole route before you move.","rows":["############","##..2b.T..3#","#~..#.5.~..#","#.~..~b.b~.#","#.~..#bB#.~#","#FG.bb.~...#","#<..~2~....#","#..#.b..#..#","############"]}];
 const ORIG_NAMES=["First Shot","Pontoon","Round the Corner","Line of Sight","Return Fire","Turntable","Black Ice","One-Way Belt","Wormholes","Thin Ice"];
-const PAR=[22,39,13,18,18,16,23,25,19,10,10,8,23,17,19,45,23,32,38,59,37,45,45,49,47,56,54,61,80,82,92,102,132];
+const PAR=[22,39,13,18,18,16,23,25,19,10,10,8,23,17,19,45,23,32,38,59,37,45,45,49,47,56,54,61,80,82,92,102,132,101,103,111,112,119,125,127,153,168,174];
 (function(){
 const $=id=>document.getElementById(id),cv=$('cv'),ctx=cv.getContext('2d');
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;

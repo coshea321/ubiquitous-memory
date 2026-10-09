@@ -23,7 +23,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--mono);font-size:14p
 header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:2px solid var(--ink);padding-bottom:6px}
 h1{font-family:var(--display);font-weight:400;font-size:clamp(26px,7vw,38px);letter-spacing:.04em;margin:0;line-height:1;text-transform:uppercase}
 .sub{margin:0;color:var(--muted);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
-.ver{text-transform:none;opacity:.75;font-variant-numeric:tabular-nums}
+.ver{white-space:nowrap;text-transform:none;opacity:.75;font-variant-numeric:tabular-nums}
 .sectors{border:0;padding:0}
 .sectors summary{padding:4px 0}
 .sectors .n{color:var(--muted);font-weight:500;letter-spacing:.04em;font-variant-numeric:tabular-nums}
@@ -59,7 +59,7 @@ dt{font-weight:600} dd{margin:0;color:var(--muted);min-width:0}
 kbd{font:inherit;border:1px solid var(--line);border-radius:2px;padding:0 4px}
 </style>
 <main class="wrap">
-  <header><h1>Beamline Tank</h1><p class="sub">A LaserTank-style puzzle &middot; <span id="nsec"></span> sectors &middot; <span class="ver" title="Version">v__APPVERSION__</span></p></header>
+  <header><h1>Beamline Tank</h1><p class="sub">A LaserTank-style puzzle &middot; <span id="nsec"></span> sectors <span class="ver" title="Version">&middot; v__APPVERSION__</span></p></header>
   <details class="sectors" id="sectors">
     <summary>Sectors <span class="n" id="sprog"></span></summary>
     <nav class="strip" id="strip" aria-label="Levels"></nav>
