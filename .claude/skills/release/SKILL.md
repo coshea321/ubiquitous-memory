@@ -20,9 +20,10 @@ Run these steps in order. Stop at the first failure and report it; don't commit.
    Every level must be solvable. Note any par that changed (old → new) for the PR:
    a rule change that moves the par of a level it wasn't meant to touch is a
    bug until proven otherwise.
-3. **Build.** `npm run build`. It rewrites `docs/` and `build/`; commit them with
-   the source change. There is no version to bump: the build stamps a new service
-   worker cache from a hash of the page.
+3. **Build.** If players will notice the change, bump `version` in `package.json`
+   first (1.1 → 1.2; 2.0 for a big change): it is shown in the page header.
+   Then `npm run build`. It rewrites `docs/` and `build/`; commit them with
+   the source change. The service worker cache is stamped from a hash of the page.
 4. **Docs.** Update whichever of these the change affects:
    - `HANDOVER.md`: rules, level format, file map, level count, commands.
    - `BACKLOG.md`: strike what this closed, add what it opened, record any
