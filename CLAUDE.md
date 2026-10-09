@@ -26,7 +26,7 @@ Cathal is a **non-coder**: he reviews and merges every PR. Lead with the answer,
 - All colors are CSS tokens in `src/shell.html` (light + dark). The canvas reads them at runtime; don't hard-code colors in `ui.js`.
 - Saved progress is keyed by level name (localStorage `blt2`), so renaming a level resets its solved mark.
 - Verify UI changes with `npm run check` (Playwright) before committing.
-- No version to bump: the build stamps the service worker cache with a hash of the page.
+- The header shows `version` from `package.json` (e.g. `v1.1`). Bump it in every PR players will notice (1.1 → 1.2; 2.0 for a big change). The service worker cache is stamped separately from a hash of the page.
 - Confirm the design of anything non-trivial before building it, then build the confirmed scope: no wider, no narrower.
 
 ## Changes and pull requests

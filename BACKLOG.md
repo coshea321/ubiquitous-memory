@@ -8,7 +8,7 @@ here in the same PR; record any decision Cathal makes, including "no".
 
 - **Level editor:** palette, paint the grid, test play, and export the `rows` strings. The solver can run in the browser to validate (it is plain JS).
 - **Bigger levels:** full 16×16 maps, like the original.
-- **Hand-made hard tier:** replace the generated sectors 21–33 with hand-made puzzles.
+- **Hand-made hard tier:** replace the generated sectors 21–43 with hand-made puzzles.
 - **Feel:** sound effects (start audio from a tap), haptics (`navigator.vibrate`) on death and win.
 - **Move history:** show the move history, and add a replay of the shortest solution as a "show me" hint (the solver path is available at build time).
 - **Landscape layout:** put the board beside the controls in landscape on phones.
@@ -24,3 +24,4 @@ here in the same PR; record any decision Cathal makes, including "no".
 - **Tap-to-shoot** (Cathal, 9 Oct 2026): tapping something you can't drive to aims and fires at it, mirror bounces included. Not built: "drive somewhere, then shoot" from one tap, which could pick routes the player didn't expect.
 - **Tap-to-drive routing stays synchronous** (code review, 8 Oct 2026). Measured from every level's start, tapping every
   square: worst case about 6 ms and under 300 positions searched. Revisit only if much larger levels arrive.
+- **Version number** (Cathal, 9 Oct 2026): a small version number in the header, from `package.json`. Bumped by hand in PRs players will notice.
