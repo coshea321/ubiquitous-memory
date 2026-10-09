@@ -21,5 +21,6 @@ here in the same PR; record any decision Cathal makes, including "no".
   ignores objects passing over it. Changing any of these moves pars and can break levels: confirm first.
 - **No dependencies at runtime.** Playwright is for the smoke test only.
 - **Progress is keyed by level name** (`blt2`), so levels can be reordered freely but not renamed casually.
+- **Tap-to-shoot** (Cathal, 9 Oct 2026): tapping something you can't drive to aims and fires at it, mirror bounces included. Not built: "drive somewhere, then shoot" from one tap, which could pick routes the player didn't expect.
 - **Tap-to-drive routing stays synchronous** (code review, 8 Oct 2026). Measured from every level's start, tapping every
   square: worst case about 6 ms and under 300 positions searched. Revisit only if much larger levels arrive.
