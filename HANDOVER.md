@@ -3,7 +3,7 @@
 A LaserTank-style puzzle game (turn-based tank, lasers, mirrors, crates, anti-tanks). It runs as a single-file web page and as an installable PWA for phones. It uses no frameworks or dependencies, and every level is checked by a solver.
 
 - **Live game (GitHub Pages):** https://coshea321.github.io/ubiquitous-memory/ (served from `docs/` on `main`, so every merge goes live)
-- **Status:** version 1.1, 43 levels, ordered easy to hard. Sectors 29–43 are an extra-hard tier (par 80–174, sorted by par). Tap-to-drive, tap-to-shoot, undo, restart, progress saved on the device, light and dark themes.
+- **Status:** version 1.2, 48 levels, ordered easy to hard. Sectors 29–48 are an extra-hard tier (par 80–174, sorted by par). Tap-to-drive, tap-to-shoot, undo, restart, progress saved on the device, light and dark themes.
 - **Name:** "Beamline Tank" is deliberately not "LaserTank". The artwork and levels are original; only the rules are borrowed.
 
 ## Quick start
@@ -19,7 +19,7 @@ Node 18+ is enough. Nothing needs installing except Playwright for `check`.
 
 ## Version number
 
-The header shows a small version number (`v1.1`). It comes from `version` in `package.json`, which the build writes into the page.
+The header shows a small version number (`v1.2`). It comes from `version` in `package.json`, which the build writes into the page.
 Bump it in every PR that players will notice: the second number for new levels or features (1.1 → 1.2), the first for a big change (1.x → 2.0).
 The service worker cache is separate: the build still stamps it from a hash of the page, so phones update whether or not the version moves.
 
@@ -36,7 +36,7 @@ The service worker cache is separate: the build still stamps it from a hash of t
 | `tools/lib.js` | Loads engine + levels into Node; BFS `solve(rows)`. |
 | `tools/solve.js`, `tools/try.js` | Check the real levels, or a scratch file of candidates. |
 | `tools/gen.js`, `prune.js`, `pick.js` | Random level generator → declutter → rank. Produced sectors 21–28. |
-| `tools/climb.js` | Hill-climber: mutates a level cell by cell, keeping changes that stay solvable and raise par. Produced sectors 29–43 (then `prune.js`). |
+| `tools/climb.js` | Hill-climber: mutates a level cell by cell, keeping changes that stay solvable and raise par. Produced the extra-hard tier: remixes of earlier levels, plus five levels climbed from fresh `gen.js` layouts (Tidewater, Narrows, Chicane, Sentry Post, Cold Front), then `prune.js`. |
 | `tools/check.js` | Playwright smoke test (script errors, service worker, offline reload, tap-to-drive, tap-to-shoot, collapsible sector strip, level switch mid-animation). |
 | `docs/` | **Build output.** The deployable PWA. Do not edit by hand. |
 | `build/artifact.html` | **Build output.** Paste or publish as the claude.ai artifact. |
