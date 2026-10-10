@@ -95,11 +95,18 @@ function draw(){
     ctx.shadowBlur=0;ctx.strokeStyle='#fff';ctx.lineWidth=Math.max(1,c*.045);ctx.stroke();ctx.restore();
   }
 }
+const GROUP=20;
+function showGroup(g){
+  if(LEVELS.length<=GROUP)return;
+  [...$('strip').children].forEach((b,k)=>{b.hidden=Math.floor(k/GROUP)!==g;});
+  [...$('groups').children].forEach((b,k)=>b.setAttribute('aria-selected',k===g));
+}
 function hud(){
   $('lname').textContent=String(li+1).padStart(2,'0')+' / '+LEVELS[li].name;
   $('count').textContent='Moves '+moves+'  ·  Best possible '+PAR[li];
   $('tip').textContent=LEVELS[li].tip;
   [...$('strip').children].forEach((b,k)=>{b.className=solved.has(LEVELS[k].name)?'done':'';b.setAttribute('aria-current',k===li);});
+  [...$('groups').children].forEach((b,g)=>{const n=LEVELS.slice(g*GROUP,(g+1)*GROUP).filter(L=>solved.has(L.name)).length;b.lastChild.textContent=n?' '+n+'✓':'';});
   $('sprog').textContent='· on '+String(li+1).padStart(2,'0')+' · '+LEVELS.filter(L=>solved.has(L.name)).length+' of '+LEVELS.length+' cleared';
 }
 function banner(kind,title,text,btns){
@@ -109,7 +116,7 @@ function banner(kind,title,text,btns){
   btns.forEach(([label,fn,pri])=>{const e=document.createElement('button');e.className='btn'+(pri?' pri':'');e.textContent=label;e.onclick=fn;row.appendChild(e);});
   b.hidden=false;
 }
-function go(n){gen++;playing=false;li=(n+LEVELS.length)%LEVELS.length;S=parseLevel(LEVELS[li].rows);hist=[];moves=0;queue=[];view=null;beam=null;banner();save();hud();size();}
+function go(n){gen++;playing=false;li=(n+LEVELS.length)%LEVELS.length;S=parseLevel(LEVELS[li].rows);hist=[];moves=0;queue=[];view=null;beam=null;banner();save();showGroup(Math.floor(li/GROUP));hud();size();}
 function undo(){if(playing||!hist.length)return;S=hist.pop();moves--;banner();hud();draw();}
 function ended(){
   if(S.won){
@@ -191,6 +198,12 @@ function hold(el,a){
 function start(data){
   load();if(data&&data.li>=0&&data.li<LEVELS.length)li=data.li;
   LEVELS.forEach((L,k)=>{const b=document.createElement('button');b.textContent=String(k+1).padStart(2,'0');b.title=L.name;b.onclick=()=>{go(k);b.blur();$('sectors').open=false;};$('strip').appendChild(b);});
+  // Sector groups: the strip shows GROUP sectors at a time once there are more than that, with a tab per group.
+  if(LEVELS.length>GROUP){$('groups').hidden=false;
+    for(let g=0;g*GROUP<LEVELS.length;g++){const b=document.createElement('button'),hi=Math.min((g+1)*GROUP,LEVELS.length);
+      b.setAttribute('role','tab');b.append(String(g*GROUP+1).padStart(2,'0')+'–'+String(hi).padStart(2,'0'),Object.assign(document.createElement('span'),{className:'c'}));
+      b.onclick=()=>showGroup(g);$('groups').appendChild(b);}}
+  $('sectors').addEventListener('toggle',()=>{if($('sectors').open)showGroup(Math.floor(li/GROUP));});
   for(let d=0;d<4;d++)hold($('k'+d),d);hold($('fire'),4);
   cv.addEventListener('pointerdown',e=>{e.preventDefault();tapBoard(e);});
   $('undo').onclick=undo;$('reset').onclick=()=>{if(!playing)go(li);};

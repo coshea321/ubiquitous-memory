@@ -42,6 +42,10 @@ h1{font-family:var(--display);font-weight:400;font-size:clamp(26px,7vw,38px);let
 .sectors{border:0;padding:0}
 .sectors summary{padding:4px 0}
 .sectors .n{color:var(--muted);font-weight:500;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.groups{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.groups button{font:600 12px var(--mono);font-variant-numeric:tabular-nums;letter-spacing:.04em;background:transparent;color:var(--muted);border:0;border-bottom:2px solid transparent;padding:4px 2px;cursor:pointer}
+.groups button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+.groups .c{color:var(--ok);font-weight:500}
 .strip{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .strip button{width:34px;height:30px;font:600 12px var(--mono);font-variant-numeric:tabular-nums;background:transparent;color:var(--ink);border:1.5px solid var(--line);border-radius:2px;cursor:pointer;padding:0}
 .strip button.done{background:var(--ok);border-color:var(--ok);color:var(--bg)}
@@ -76,9 +80,10 @@ kbd{font:inherit;border:1px solid var(--line);border-radius:2px;padding:0 4px}
 </head>
 <body>
 <main class="wrap">
-  <header><h1>Beamline Tank</h1><p class="sub">A LaserTank-style puzzle &middot; <span id="nsec"></span> sectors <span class="ver" title="Version">&middot; v1.2</span></p></header>
+  <header><h1>Beamline Tank</h1><p class="sub">A LaserTank-style puzzle &middot; <span id="nsec"></span> sectors <span class="ver" title="Version">&middot; v1.3</span></p></header>
   <details class="sectors" id="sectors">
     <summary>Sectors <span class="n" id="sprog"></span></summary>
+    <div class="groups" id="groups" role="tablist" aria-label="Sector groups" hidden></div>
     <nav class="strip" id="strip" aria-label="Levels"></nav>
   </details>
   <div class="meta"><h2 id="lname"></h2><span class="n" id="count"></span></div>
@@ -373,11 +378,18 @@ function draw(){
     ctx.shadowBlur=0;ctx.strokeStyle='#fff';ctx.lineWidth=Math.max(1,c*.045);ctx.stroke();ctx.restore();
   }
 }
+const GROUP=20;
+function showGroup(g){
+  if(LEVELS.length<=GROUP)return;
+  [...$('strip').children].forEach((b,k)=>{b.hidden=Math.floor(k/GROUP)!==g;});
+  [...$('groups').children].forEach((b,k)=>b.setAttribute('aria-selected',k===g));
+}
 function hud(){
   $('lname').textContent=String(li+1).padStart(2,'0')+' / '+LEVELS[li].name;
   $('count').textContent='Moves '+moves+'  ·  Best possible '+PAR[li];
   $('tip').textContent=LEVELS[li].tip;
   [...$('strip').children].forEach((b,k)=>{b.className=solved.has(LEVELS[k].name)?'done':'';b.setAttribute('aria-current',k===li);});
+  [...$('groups').children].forEach((b,g)=>{const n=LEVELS.slice(g*GROUP,(g+1)*GROUP).filter(L=>solved.has(L.name)).length;b.lastChild.textContent=n?' '+n+'✓':'';});
   $('sprog').textContent='· on '+String(li+1).padStart(2,'0')+' · '+LEVELS.filter(L=>solved.has(L.name)).length+' of '+LEVELS.length+' cleared';
 }
 function banner(kind,title,text,btns){
@@ -387,7 +399,7 @@ function banner(kind,title,text,btns){
   btns.forEach(([label,fn,pri])=>{const e=document.createElement('button');e.className='btn'+(pri?' pri':'');e.textContent=label;e.onclick=fn;row.appendChild(e);});
   b.hidden=false;
 }
-function go(n){gen++;playing=false;li=(n+LEVELS.length)%LEVELS.length;S=parseLevel(LEVELS[li].rows);hist=[];moves=0;queue=[];view=null;beam=null;banner();save();hud();size();}
+function go(n){gen++;playing=false;li=(n+LEVELS.length)%LEVELS.length;S=parseLevel(LEVELS[li].rows);hist=[];moves=0;queue=[];view=null;beam=null;banner();save();showGroup(Math.floor(li/GROUP));hud();size();}
 function undo(){if(playing||!hist.length)return;S=hist.pop();moves--;banner();hud();draw();}
 function ended(){
   if(S.won){
@@ -469,6 +481,12 @@ function hold(el,a){
 function start(data){
   load();if(data&&data.li>=0&&data.li<LEVELS.length)li=data.li;
   LEVELS.forEach((L,k)=>{const b=document.createElement('button');b.textContent=String(k+1).padStart(2,'0');b.title=L.name;b.onclick=()=>{go(k);b.blur();$('sectors').open=false;};$('strip').appendChild(b);});
+  // Sector groups: the strip shows GROUP sectors at a time once there are more than that, with a tab per group.
+  if(LEVELS.length>GROUP){$('groups').hidden=false;
+    for(let g=0;g*GROUP<LEVELS.length;g++){const b=document.createElement('button'),hi=Math.min((g+1)*GROUP,LEVELS.length);
+      b.setAttribute('role','tab');b.append(String(g*GROUP+1).padStart(2,'0')+'–'+String(hi).padStart(2,'0'),Object.assign(document.createElement('span'),{className:'c'}));
+      b.onclick=()=>showGroup(g);$('groups').appendChild(b);}}
+  $('sectors').addEventListener('toggle',()=>{if($('sectors').open)showGroup(Math.floor(li/GROUP));});
   for(let d=0;d<4;d++)hold($('k'+d),d);hold($('fire'),4);
   cv.addEventListener('pointerdown',e=>{e.preventDefault();tapBoard(e);});
   $('undo').onclick=undo;$('reset').onclick=()=>{if(!playing)go(li);};
