@@ -27,6 +27,10 @@ h1{font-family:var(--display);font-weight:400;font-size:clamp(26px,7vw,38px);let
 .sectors{border:0;padding:0}
 .sectors summary{padding:4px 0}
 .sectors .n{color:var(--muted);font-weight:500;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.groups{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.groups button{font:600 12px var(--mono);font-variant-numeric:tabular-nums;letter-spacing:.04em;background:transparent;color:var(--muted);border:0;border-bottom:2px solid transparent;padding:4px 2px;cursor:pointer}
+.groups button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+.groups .c{color:var(--ok);font-weight:500}
 .strip{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .strip button{width:34px;height:30px;font:600 12px var(--mono);font-variant-numeric:tabular-nums;background:transparent;color:var(--ink);border:1.5px solid var(--line);border-radius:2px;cursor:pointer;padding:0}
 .strip button.done{background:var(--ok);border-color:var(--ok);color:var(--bg)}
@@ -62,6 +66,7 @@ kbd{font:inherit;border:1px solid var(--line);border-radius:2px;padding:0 4px}
   <header><h1>Beamline Tank</h1><p class="sub">A LaserTank-style puzzle &middot; <span id="nsec"></span> sectors <span class="ver" title="Version">&middot; v__APPVERSION__</span></p></header>
   <details class="sectors" id="sectors">
     <summary>Sectors <span class="n" id="sprog"></span></summary>
+    <div class="groups" id="groups" role="tablist" aria-label="Sector groups" hidden></div>
     <nav class="strip" id="strip" aria-label="Levels"></nav>
   </details>
   <div class="meta"><h2 id="lname"></h2><span class="n" id="count"></span></div>

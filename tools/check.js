@@ -1,5 +1,5 @@
 // Smoke test of the built PWA: serves docs/, loads it in headless Chromium, checks for script errors,
-// service-worker registration, an offline reload, tap-to-drive, tap-to-shoot, the collapsible sector strip, and switching level mid-animation. Needs: npm i -D playwright (or a Chromium on PATH).
+// service-worker registration, an offline reload, tap-to-drive, tap-to-shoot, the collapsible sector strip and its groups, and switching level mid-animation. Needs: npm i -D playwright (or a Chromium on PATH).
 const http=require('http'),fs=require('fs'),path=require('path');
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'..','docs');
@@ -34,6 +34,12 @@ const srv=http.createServer((q,r)=>{let f=path.join(root,decodeURIComponent(q.ur
     dispatchEvent(new KeyboardEvent('keydown',{key:' '}));document.querySelector('#strip button:nth-child(2)').click();
     const t=setInterval(()=>{out.push(cv.toDataURL());if(out.length>=40){clearInterval(t);r(out);}},15);}));
   const stale=frames.filter(f=>f!==frames[frames.length-1]).length;
-  console.log({errors:errs,sectorsCollapse:shut&&reshut,serviceWorker:sw,offlineTitle:offline,afterTap:moves,tapToShoot:shot,staleFramesAfterSwitch:stale});
-  await b.close();srv.close();process.exit(errs.length||!shut||!reshut||!sw||!/Moves [1-9]/.test(moves)||!shot||stale?1:0);
+  // Sector groups: the second group tab shows sectors 21 onward, and picking one opens that sector and its group next time.
+  await p.click('#sectors summary');await p.click('#groups button:nth-child(2)');
+  const firstShown=await p.locator('#strip button:visible').first().textContent();
+  await p.locator('#strip button:visible').first().click();const picked=await p.locator('#lname').textContent();
+  await p.click('#sectors summary');const reopened=await p.locator('#strip button:visible').first().textContent();await p.click('#sectors summary');
+  const groups=firstShown==='21'&&picked.startsWith('21 /')&&reopened==='21';
+  console.log({errors:errs,sectorsCollapse:shut&&reshut,serviceWorker:sw,offlineTitle:offline,afterTap:moves,tapToShoot:shot,sectorGroups:groups,staleFramesAfterSwitch:stale});
+  await b.close();srv.close();process.exit(errs.length||!shut||!reshut||!sw||!/Moves [1-9]/.test(moves)||!shot||!groups||stale?1:0);
 })();

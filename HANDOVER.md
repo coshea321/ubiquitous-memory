@@ -3,7 +3,7 @@
 A LaserTank-style puzzle game (turn-based tank, lasers, mirrors, crates, anti-tanks). It runs as a single-file web page and as an installable PWA for phones. It uses no frameworks or dependencies, and every level is checked by a solver.
 
 - **Live game (GitHub Pages):** https://coshea321.github.io/ubiquitous-memory/ (served from `docs/` on `main`, so every merge goes live)
-- **Status:** version 1.2, 48 levels, ordered easy to hard. Sectors 29–48 are an extra-hard tier (par 80–174, sorted by par). Tap-to-drive, tap-to-shoot, undo, restart, progress saved on the device, light and dark themes.
+- **Status:** version 1.3, 48 levels, ordered easy to hard. Sectors 29–48 are an extra-hard tier (par 80–174, sorted by par). Tap-to-drive, tap-to-shoot, undo, restart, progress saved on the device, light and dark themes.
 - **Name:** "Beamline Tank" is deliberately not "LaserTank". The artwork and levels are original; only the rules are borrowed.
 
 ## Quick start
@@ -19,7 +19,7 @@ Node 18+ is enough. Nothing needs installing except Playwright for `check`.
 
 ## Version number
 
-The header shows a small version number (`v1.2`). It comes from `version` in `package.json`, which the build writes into the page.
+The header shows a small version number (`v1.3`). It comes from `version` in `package.json`, which the build writes into the page.
 Bump it in every PR that players will notice: the second number for new levels or features (1.1 → 1.2), the first for a big change (1.x → 2.0).
 The service worker cache is separate: the build still stamps it from a hash of the page, so phones update whether or not the version moves.
 
@@ -37,7 +37,8 @@ The service worker cache is separate: the build still stamps it from a hash of t
 | `tools/solve.js`, `tools/try.js` | Check the real levels, or a scratch file of candidates. |
 | `tools/gen.js`, `prune.js`, `pick.js` | Random level generator → declutter → rank. Produced sectors 21–28. |
 | `tools/climb.js` | Hill-climber: mutates a level cell by cell, keeping changes that stay solvable and raise par. Produced the extra-hard tier: remixes of earlier levels, plus five levels climbed from fresh `gen.js` layouts (Tidewater, Narrows, Chicane, Sentry Post, Cold Front), then `prune.js`. |
-| `tools/check.js` | Playwright smoke test (script errors, service worker, offline reload, tap-to-drive, tap-to-shoot, collapsible sector strip, level switch mid-animation). |
+| `tools/batch.js` | One command for a batch of new extra-hard levels from scratch: gen → climb → prune → reject near-copies → name → insert by par. See below. |
+| `tools/check.js` | Playwright smoke test (script errors, service worker, offline reload, tap-to-drive, tap-to-shoot, collapsible sector strip and its groups, level switch mid-animation). |
 | `docs/` | **Build output.** The deployable PWA. Do not edit by hand. |
 | `build/artifact.html` | **Build output.** Paste or publish as the claude.ai artifact. |
 | `BACKLOG.md` | Pending ideas and decisions on record. |
@@ -86,6 +87,7 @@ A mirror's open sides are the two faces its bright diagonal looks out of. A beam
 
 - **Colors:** every color is a CSS token in `shell.html`. The canvas reads the tokens through `getComputedStyle` and re-reads them when the theme changes.
 - **Sector strip:** a `<details>` above the board, collapsed by default. Its summary shows the current sector and how many are cleared; picking a sector closes it again.
+  Past 20 levels it shows 20 sectors at a time, with a tab per group (`01–20`, `21–40`, …) and a cleared count on each tab. It opens on the current level's group (`GROUP` in `ui.js`).
 - **Tap-to-drive:** `route()` runs a breadth-first search using only the four drive actions on cloned states. It therefore respects ice, belts, tunnels and anti-tank fire. It gives up after 40k states. Tapping the tank fires.
 - **Tap-to-shoot:** if the tapped square can't be reached but holds an object, `aim()` tries a shot in each direction (the current facing first, then clockwise) on cloned states. It picks the first shot whose beam reaches that square, changes something, and doesn't destroy the tank. Mirror bounces count. That becomes turn + fire, or just fire. If neither driving nor shooting works, it shows a red cross.
 - **Input queue:** tapped routes go into `queue`. Pressing a key or button replaces the queue, which interrupts an auto-drive.
@@ -115,6 +117,18 @@ node tools/climb.js 7 200 '["#####",...]' best.json
 ```
 
 Generated levels are valid but look random. Hand-made levels read better.
+
+### Many levels in one go (`tools/batch.js`)
+
+```bash
+node tools/batch.js 10 7        # 10 new extra-hard levels, seed 7 (use a new seed each run)
+npm run build && npm run check  # then /release
+```
+
+It needs no judgement calls, so a cheaper model can run it. It does the whole pipeline: random layouts (`gen.js`) → hill-climb (`climb.js`) → `prune.js`.
+It keeps a level only if par ≥ 100 and no existing level is within 20 squares of it under any rotation or mirror. It names it and slots it into sectors 29+ by par.
+About 8 levels an hour on 4 CPUs. Progress is written to `src/levels.js` after every round, so commit after each run: a cloud container can be reclaimed when idle.
+Keep each PR to about 10 levels so it stays reviewable.
 
 ## Put it on your phone (PWA)
 
