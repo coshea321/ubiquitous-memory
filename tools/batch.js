@@ -27,9 +27,13 @@ function writeLevels(f){const head=f.levels.slice(0,TIER),tail=f.levels.slice(TI
   tail.sort((x,y)=>x.par-y.par);
   fs.writeFileSync(SRC,f.pre+'['+[...head,...tail.map(t=>t.l)].map(l=>JSON.stringify(l)).join(',\n')+']'+f.post);}
 // Distance: squares that differ, minimised over the 8 rotations/mirrors; boards of other shapes count as unrelated.
+// Pieces that point somewhere (mirrors, anti-tanks, belts) turn with the board, so a rotated copy scores 0.
 const grid=r=>r.map(x=>x.split(''));
-const syms=g=>{const out=[],rot=a=>a[0].map((_,x)=>a.map(row=>row[x]).reverse());let a=g;
-  for(let k=0;k<4;k++){out.push(a,a.map(row=>row.slice().reverse()));a=rot(a);}return out;};
+const remap=(m,a)=>a.map(row=>row.map(c=>m[c]||c));
+const CW={'^':'>','>':'v','v':'<','<':'^',u:'r',r:'d',d:'l',l:'u',1:'2',2:'3',3:'4',4:'1',5:'6',6:'7',7:'8',8:'5'};
+const FLIP={'>':'<','<':'>',r:'l',l:'r',1:'4',4:'1',2:'3',3:'2',5:'8',8:'5',6:'7',7:'6'};
+const syms=g=>{const out=[],rot=a=>remap(CW,a[0].map((_,x)=>a.map(row=>row[x]).reverse()));let a=g;
+  for(let k=0;k<4;k++){out.push(a,remap(FLIP,a.map(row=>row.slice().reverse())));a=rot(a);}return out;};
 function dist(a,b){let m=Infinity;const B=grid(b);
   for(const A of syms(grid(a))){if(A.length!==B.length||A[0].length!==B[0].length)continue;
     let d=0;for(let y=0;y<A.length;y++)for(let x=0;x<A[0].length;x++)if(A[y][x]!==B[y][x])d++;m=Math.min(m,d);}
