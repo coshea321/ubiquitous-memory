@@ -76,7 +76,7 @@ kbd{font:inherit;border:1px solid var(--line);border-radius:2px;padding:0 4px}
 </head>
 <body>
 <main class="wrap">
-  <header><h1>Beamline Tank</h1><p class="sub">A LaserTank-style puzzle &middot; <span id="nsec"></span> sectors <span class="ver" title="Version">&middot; v1.1</span></p></header>
+  <header><h1>Beamline Tank</h1><p class="sub">A LaserTank-style puzzle &middot; <span id="nsec"></span> sectors <span class="ver" title="Version">&middot; v1.2</span></p></header>
   <details class="sectors" id="sectors">
     <summary>Sectors <span class="n" id="sprog"></span></summary>
     <nav class="strip" id="strip" aria-label="Levels"></nav>
@@ -264,13 +264,18 @@ const LEVELS=[{"name":"First Shot","tip":"Bricks crumble under laser fire. Press
 {"name":"Slag Heap","tip":"Extra-hard sector. Plan every shot before you fire.","rows":["############","#....~##b..#","#.G.bbB..B.#","#..#..5.bB.#","#~..#.#b####","#..T7..~F..#","#....#.#...#","############"]},
 {"name":"Rockfall","tip":"Extra-hard sector. Plan every shot before you fire.","rows":["############","##b.......##","#..G4~..#..#","#T7#.bb~.~.#","##4....44..#","#..b.~#.F#.#","#.B7...6..##","#..G...#...#","############"]},
 {"name":"Killbox","tip":"Extra-hard sector. Plan every shot before you fire.","rows":["#############","#.F~.6#...>.#","###b..v.~...#","#..~<.~.#.T##","#.G~B..#.~#.#","#...#.......#","#1..........#","#############"]},
+{"name":"Sentry Post","tip":"Extra-hard sector. Plan every shot before you fire.","rows":["############","#..#..>B...#","#....TB~...#","##....#....#","#b...4...2.#","#.>...~.#G##","#.####..~~F#","#b.....2b..#","############"]},
+{"name":"Cold Front","tip":"Extra-hard sector. Plan every shot before you fire.","rows":["############","#.1..B...v.#","#i...#...Bb#","#.#G#.GG.#.#","#...#....#b#","#...#>.2...#","#...~..##..#","#.T1F~.#...#","############"]},
 {"name":"Pincer","tip":"Extra-hard sector. Plan every shot before you fire.","rows":["###########","##.v...#..#","#.F~...2..#","#...#...#.#","####.#^^5.#","##.<.b..#.#","#.Tb.#G..##","#....B.4#.#","#..#..G.#.#","###########"]},
+{"name":"Chicane","tip":"Extra-hard sector. Plan every shot before you fire.","rows":["###########","#..b~.....#","##.#.3b3B.#","#F.~7#bb>^#","#B#~.>.^#.#","#......TB##","#..#..#...#","#...~B..#.#","#.#..7#####","###########"]},
 {"name":"Last Stand","tip":"Extra-hard sector. Plan every shot before you fire.","rows":["############","###.bb^T...#","#3..#.5.#..#","#.#..~...~.#","#.~..#bB#.##","#FG....~...#","#.~..2~....#","#..#.b..~..#","############"]},
 {"name":"Overwatch","tip":"Extra-hard sector. Plan every shot before you fire.","rows":["#############","##F~.6#.b..1#","#.~~..~.~...#","#..~<.~b#.T.#","#..~B..<.~#.#","#...#...#...#","#...B...~.~~#","#############"]},
+{"name":"Tidewater","tip":"Extra-hard sector. Plan every shot before you fire.","rows":["#############","#...#....6..#","#..B.~~~~...#","#.~~..BT#3..#","#..B.Bbv#...#","#.#5.#.<F.B.#","#############"]},
+{"name":"Narrows","tip":"Extra-hard sector. Plan every shot before you fire.","rows":["#########","#.~.~#..#","#.B.b.2.#","#..#....#","#....~#.#","#.G..2<.#","#..T~..##","#.#~2b..#","#.#vF#..#","#########"]},
 {"name":"Holdout","tip":"Extra-hard sector. Plan every shot before you fire.","rows":["############","#...bb^T...#","#..b#.5.##.#","#.~..~...~.#","#~.#.#3B#.v#","#FG....~..^#","#.~...~....#","#1..#b..~..#","############"]},
 {"name":"Endgame","tip":"Extra-hard sector. Plan every shot before you fire.","rows":["############","##..2b.T..3#","#~..#.5.~..#","#.~..~b.b~.#","#.~..#bB#.~#","#FG.bb.~...#","#<..~2~....#","#..#.b..#..#","############"]}];
 const ORIG_NAMES=["First Shot","Pontoon","Round the Corner","Line of Sight","Return Fire","Turntable","Black Ice","One-Way Belt","Wormholes","Thin Ice"];
-const PAR=[22,39,13,18,18,16,23,25,19,10,10,8,23,17,19,45,23,32,38,59,37,45,45,49,47,56,54,61,80,82,92,101,102,103,111,112,119,125,127,132,153,168,174];
+const PAR=[22,39,13,18,18,16,23,25,19,10,10,8,23,17,19,45,23,32,38,59,37,45,45,49,47,56,54,61,80,82,92,101,102,103,111,112,119,125,125,125,127,130,132,153,154,154,168,174];
 (function(){
 const $=id=>document.getElementById(id),cv=$('cv'),ctx=cv.getContext('2d');
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -278,9 +283,9 @@ let li=0,S,hist=[],moves=0,playing=false,gen=0,queue=[],bad=null,view=null,beam=
 const solved=new Set();
 const NAMES=['bg','ink','floor','grid','wall','wallhi','brick','brickln','crate','crateln','water','waterhi','ice','icehi','belt','beltln','glass','mirror','mirrorback','tank','tankdk','enemy','enemydk','deadat','laser','flag','accent'];
 function colors(){const cs=getComputedStyle(document.documentElement);NAMES.forEach(n=>C[n]=cs.getPropertyValue('--'+n).trim());}
-function save(){try{localStorage.setItem('blt2',JSON.stringify({s:[...solved],li}));}catch(e){}}
+function save(){try{localStorage.setItem('blt2',JSON.stringify({s:[...solved],li,n:LEVELS[li].name}));}catch(e){}}
 function load(){try{const o=JSON.parse(localStorage.getItem('blt')||'null');if(o&&o.s)o.s.forEach(k=>ORIG_NAMES[k]&&solved.add(ORIG_NAMES[k]));}catch(e){}
-  try{const d=JSON.parse(localStorage.getItem('blt2')||'{}');(d.s||[]).forEach(n=>solved.add(n));if(d.li>=0&&d.li<LEVELS.length)li=d.li;}catch(e){}}
+  try{const d=JSON.parse(localStorage.getItem('blt2')||'{}');(d.s||[]).forEach(n=>solved.add(n));const k=LEVELS.findIndex(L=>L.name===d.n);if(k>=0)li=k;else if(d.li>=0&&d.li<LEVELS.length)li=d.li;}catch(e){}}
 
 function size(){
   const W=$('board').clientWidth-16,H=Math.max(220,innerHeight-360);
