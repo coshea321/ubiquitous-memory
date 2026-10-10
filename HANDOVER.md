@@ -89,7 +89,7 @@ A mirror's open sides are the two faces its bright diagonal looks out of. A beam
 - **Tap-to-drive:** `route()` runs a breadth-first search using only the four drive actions on cloned states. It therefore respects ice, belts, tunnels and anti-tank fire. It gives up after 40k states. Tapping the tank fires.
 - **Tap-to-shoot:** if the tapped square can't be reached but holds an object, `aim()` tries a shot in each direction (the current facing first, then clockwise) on cloned states. It picks the first shot whose beam reaches that square, changes something, and doesn't destroy the tank. Mirror bounces count. That becomes turn + fire, or just fire. If neither driving nor shooting works, it shows a red cross.
 - **Input queue:** tapped routes go into `queue`. Pressing a key or button replaces the queue, which interrupts an auto-drive.
-- **Saved progress:** stored in `localStorage` key `blt2` as solved level *names*, so levels can be reordered freely.
+- **Saved progress:** stored in `localStorage` key `blt2` as solved level *names*, plus the current level by name (`n`, with its index `li` as a fallback), so levels can be reordered freely.
 - **Artifact leftovers:** `window.claude.hot` calls are for the artifact host and are no-ops in the PWA.
 
 ## Adding or changing levels
